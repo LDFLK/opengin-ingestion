@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const OPENGIN_API_URL = process.env.OPENGIN_INGESTION_API_URL || "http://0.0.0.0:8080";
+// Separate READ and INGESTION API URLs
+const READ_API_URL = process.env.OPENGIN_READ_API_URL || "http://0.0.0.0:8081";
+const INGESTION_API_URL = process.env.OPENGIN_INGESTION_API_URL || "http://0.0.0.0:8080";
 
 export async function GET(
     request: NextRequest,
@@ -8,12 +10,16 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        // Use v1/entities/search endpoint for getting entity by ID
-        const response = await fetch(`${OPENGIN_API_URL}/v1/entities/search/${id}`, {
-            method: "GET",
+        // GET by ID uses READ API with POST to /v1/entities/search
+        // Note: Search by ID using POST with payload, not GET
+        const response = await fetch(`${READ_API_URL}/v1/entities/search`, {
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+                id: id  // Search by ID
+            }),
         });
 
         if (!response.ok) {
@@ -42,7 +48,8 @@ export async function PUT(
         const { id } = await params;
         const body = await request.json();
 
-        const response = await fetch(`${OPENGIN_API_URL}/entities/${id}`, {
+        // PUT uses INGESTION API for updating entities
+        const response = await fetch(`${INGESTION_API_URL}/entities/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
