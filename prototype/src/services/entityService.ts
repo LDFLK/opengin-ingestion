@@ -36,7 +36,7 @@ let mockEntities: Entity[] = [
 export const entityService = {
     getEntities: async (): Promise<Entity[]> => {
         try {
-            const response = await fetch("/api/entities");
+            const response = await fetch("/v1/entities");
             if (!response.ok) {
                 throw new Error(`Failed to fetch entities: ${response.statusText}`);
             }
@@ -67,7 +67,7 @@ export const entityService = {
 
     getEntityById: async (id: string): Promise<Entity | undefined> => {
         try {
-            const response = await fetch(`/api/entities/search/${id}`);
+            const response = await fetch(`/v1/entities/search/${id}`);
             if (!response.ok) {
                 if (response.status === 404) {
                     return undefined;

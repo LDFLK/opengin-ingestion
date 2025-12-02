@@ -123,7 +123,7 @@ describe('entityService', () => {
 
             const result = await entityService.getEntityById('e1')
 
-            expect(fetch).toHaveBeenCalledWith('/api/entities/search/e1')
+            expect(fetch).toHaveBeenCalledWith('/v1/entities/search/e1')
             expect(result).toEqual(mockEntity)
         })
 
