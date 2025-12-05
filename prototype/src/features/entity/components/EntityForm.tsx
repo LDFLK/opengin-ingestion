@@ -21,6 +21,31 @@ export function EntityForm({ initialData, onSubmit, isLoading, onCancel, submitL
         endTime: "",
     });
 
+    // Helper to format ISO string (UTC) to local datetime string for input (yyyy-MM-ddThh:mm)
+    const formatToLocalInput = (isoString?: string) => {
+        if (!isoString) return "";
+        try {
+            const date = new Date(isoString);
+            const localDate = new Date(date.getTime());
+            return localDate.toISOString().slice(0, 16);
+        } catch (e) {
+            console.error("Invalid date string:", isoString);
+            return "";
+        }
+    };
+
+    // Helper to format local datetime string from input back to ISO string (UTC) with Z
+    const formatToUTC = (localString: string) => {
+        if (!localString) return "";
+        try {
+            const date = new Date(localString);
+            return date.toISOString();
+        } catch (e) {
+            console.error("Invalid local date string:", localString);
+            return "";
+        }
+    };
+
     useEffect(() => {
         if (initialData) {
             setFormData({
@@ -28,8 +53,8 @@ export function EntityForm({ initialData, onSubmit, isLoading, onCancel, submitL
                 majorKind: initialData.kind?.major || "",
                 minorKind: initialData.kind?.minor || "",
                 name: initialData.name?.value || "",
-                startTime: initialData.name?.startTime || "",
-                endTime: initialData.name?.endTime || "",
+                startTime: formatToLocalInput(initialData.created),
+                endTime: formatToLocalInput(initialData.terminated),
             });
         }
     }, [initialData]);
@@ -51,12 +76,17 @@ export function EntityForm({ initialData, onSubmit, isLoading, onCancel, submitL
                 major: formData.majorKind,
                 minor: formData.minorKind,
             },
-            created: initialData?.created || now,
-            terminated: initialData?.terminated || "",
+            // Prefer existing created time (re-converted to UTC if edited via startTime inputs) 
+            // OR use formatted startTime from form 
+            // OR default to now
+            created: formData.startTime ? formatToUTC(formData.startTime) : (initialData?.created || now),
+
+            terminated: formData.endTime ? formatToUTC(formData.endTime) : (initialData?.terminated || ""),
+
             name: {
                 value: formData.name,
-                startTime: formData.startTime,
-                endTime: formData.endTime,
+                startTime: formData.startTime ? formatToUTC(formData.startTime) : (initialData?.name?.startTime || now),
+                endTime: formData.endTime ? formatToUTC(formData.endTime) : (initialData?.name?.endTime || ""),
             },
             metadata: initialData?.metadata || [],
             attributes: initialData?.attributes || [],

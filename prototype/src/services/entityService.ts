@@ -89,7 +89,7 @@ export const entityService = {
     },
 
     createEntity: async (entity: Entity): Promise<Entity> => {
-        const response = await fetch("/entities", {
+        const response = await fetch("/api/entities", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
