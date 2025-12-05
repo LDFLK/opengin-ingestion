@@ -102,7 +102,7 @@ describe('entityService', () => {
 
       const result = await entityService.createEntity(newEntity)
 
-      expect(fetch).toHaveBeenCalledWith('/entities', {
+      expect(fetch).toHaveBeenCalledWith('/api/entities', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

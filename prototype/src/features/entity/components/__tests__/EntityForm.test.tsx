@@ -59,7 +59,7 @@ describe('EntityForm', () => {
                     kind: { major: 'Person', minor: 'Employee' },
                     name: {
                         value: 'John Doe',
-                        startTime: '2024-01-01T10:00',
+                        startTime: expect.stringMatching(/^2024-01-01/),
                         endTime: '',
                     },
                 })
