@@ -1,0 +1,15 @@
+Invoice #12345
+Date: 2023-10-27
+Customer: John Doe
+
+Items:
+| Item | Quantity | Price |
+| :--- | :--- | :--- |
+| Widget A | 2 | $10.00 |
+| Widget B | 1 | $25.00 |
+
+Total: $45.00
+
+Statistics:
+- Average Order Value: $45.00
+- Year over Year Growth: 10%

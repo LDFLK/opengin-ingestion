@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+strawberry-graphql[fastapi]
+google-generativeai
+python-multipart
+python-dotenv
+pypdf
