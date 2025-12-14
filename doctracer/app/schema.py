@@ -75,12 +75,8 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def extract_data(self, file: Upload, prompt: str) -> ExtractionResult:
+    async def extract_data(self, file: Upload, prompt: str, runId: typing.Optional[str] = None) -> ExtractionResult:
         # 1. Save uploaded file to temp
-        # file.filename and file.file (spooled temp file) are available
-        # We need to write it to disk for Gemini upload API to read path (or use stream, but path is safer for MVP)
-        
-        # Create a temp file with the correct extension to help generic detection
         suffix = ""
         if file.filename:
             _, ext = os.path.splitext(file.filename)
@@ -91,11 +87,64 @@ class Mutation:
             tmp_path = tmp.name
         
         try:
-            # 2. Call Service
-            raw_text = extract_data_with_gemini(tmp_path, prompt)
+            # 2. Use Agent0 Orchestrator
+            from app.agents.orchestrator import Agent0
+            agent0 = Agent0()
+            pipeline_name = "graphql_pipeline"
             
-            # 3. Parse Response
-            return parse_extraction_response(raw_text)
+            # Create pipeline (this handles run_id generation if None)
+            run_id, metadata = agent0.create_pipeline(pipeline_name, tmp_path, file.filename or "uploaded.pdf", run_id=runId)
+            
+            # Run pipeline
+            agent0.run_pipeline(pipeline_name, run_id, prompt)
+            
+            # 3. Read Aggregated Results
+            # We need to construct the result from the aggregated JSON
+            fs_manager = agent0.fs_manager
+            aggregated_path = os.path.join(fs_manager._get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
+            
+            tables = []
+            if os.path.exists(aggregated_path):
+                with open(aggregated_path, "r") as f:
+                    raw_tables = json.load(f)
+                    
+                import csv
+                import io
+
+                for t in raw_tables:
+                    csv_content = t.get("csv", "")
+                    columns = []
+                    rows = []
+                    
+                    if csv_content:
+                        f = io.StringIO(csv_content)
+                        reader = csv.reader(f)
+                        try:
+                            headers = next(reader)
+                            columns = headers
+                            rows = list(reader)
+                        except StopIteration:
+                            pass
+                            
+                    tables.append(Table(
+                        id=str(t.get("name", "table_id")), # Use name as ID for now or generate UUID
+                        name=t.get("name", "Untitled"),
+                        columns=columns,
+                        rows=rows
+                    ))
+            
+            return ExtractionResult(
+                message=f"Pipeline run '{run_id}' completed successfully.",
+                raw_response="Processed via Agentic Pipeline",
+                tables=tables
+            )
+            
+        except Exception as e:
+            return ExtractionResult(
+                message=f"Error processing pipeline: {str(e)}",
+                raw_response="",
+                tables=[]
+            )
             
         finally:
             # Cleanup temp file

@@ -1,0 +1,118 @@
+{
+  "page_num": 4,
+  "tables": [
+    {
+      "id": "table_0",
+      "name": "Minister of Finance, Economic Stabilization and National Policies (Contd.)",
+      "columns": [
+        "Column I Duties & Functions",
+        "Column II Departments, Statutory Institutions & Public Corporations",
+        "Column III Laws and Ordinance to be Implemented"
+      ],
+      "rows": [
+        [
+          "Reforming all systems and procedures using modern management techniques and technology, thus ensuring that the functions of the Ministry are fulfilled while eliminating corruption and waste.",
+          "Department of Public Finance",
+          "Excise Ordinance (Chapter 52)"
+        ],
+        [
+          "",
+          "Department of Treasury Operations",
+          "Finance Leasing Act, No. 56 of 2000"
+        ],
+        [
+          "Formulation of national economic and financial policies and strategies",
+          "Department of State Accounts",
+          "Financial Transactions Reporting Act, No. 6 of 2006"
+        ],
+        [
+          "Preparation of national development and public investment programmes",
+          "Department of Trade and Investment Policies",
+          "Public Fiscal Management (Responsibility) Act, No. 3 of 2003"
+        ],
+        [
+          "Formulation of fiscal and macro fiscal management policies",
+          "Department of Information Technology Management",
+          "Regulation of Insurance Industry Act, No. 43 of 2000"
+        ],
+        [
+          "Identify causes for the economic crises and introduce immediate resuscitation remedies and programmes",
+          "Department of Legal Affairs",
+          "Lady Lochore Fund Act, No. 38 of 1951"
+        ],
+        [
+          "Introduce, implement and monitor economic reforms programmes needed to establish a stable and sustainable economic growth in the country.",
+          "Department of Management Audit",
+          "Local Treasury Bills Ordinance, No. 8 of 1923"
+        ],
+        [
+          "Monitor the mechanism for implementation of cross-sectoral national policy priorities.",
+          "Department of Development Finance",
+          "Nation Building Tax Act, No. 9 of 2009"
+        ],
+        [
+          "Function as the Focal Point for facilitation and coordination of international and regional trade integration including bilateral and multilateral trade agreements and resolution of disputes arising from these agreements.",
+          "Department of Public Enterprises",
+          "Business Names Act, No. 07 of 1987"
+        ],
+        [
+          "Preparation of the annual budget and management of financial resources",
+          "Office of Comptroller General",
+          "Companies Act No. 07 of 2007"
+        ],
+        [
+          "",
+          "Department of Inland Revenue",
+          "Trade Marks Act No. 30 of 1964"
+        ],
+        [
+          "",
+          "Sri Lanka Customs",
+          "Cheetus Ordinance No. 61 of 1935"
+        ],
+        [
+          "",
+          "Department of Excise",
+          "Public Contract Act No. 03 Of 1987"
+        ],
+        [
+          "",
+          "National Lotteries Board",
+          "Prevention of Money Laundering Act, No. 5 of 2006"
+        ],
+        [
+          "",
+          "Development Lotteries Board",
+          "Sri Lanka Accounting and Auditing Standards Act, No. 15 of 1995"
+        ],
+        [
+          "",
+          "Department of Valuation",
+          "Import and Export (Control) Act, No. 1 of 1969"
+        ],
+        [
+          "",
+          "Import and Export Control Department",
+          "Sri Lanka Export Development Act No. 40 of 1979"
+        ],
+        [
+          "",
+          "Sri Lanka Export Development Board",
+          ""
+        ],
+        [
+          "",
+          "Central Bank of Sri Lanka",
+          ""
+        ],
+        [
+          "",
+          "All State Banks, Financial Institutions, Insurance Companies and their subsidiaries and related institutions",
+          ""
+        ]
+      ]
+    }
+  ],
+  "raw_response": "```json\n{\n  \"tables\": [\n    {\n      \"id\": \"table_0\",\n      \"name\": \"Minister of Finance, Economic Stabilization and National Policies (Contd.)\",\n      \"columns\": [\n        \"Column I Duties & Functions\",\n        \"Column II Departments, Statutory Institutions & Public Corporations\",\n        \"Column III Laws and Ordinance to be Implemented\"\n      ],\n      \"rows\": [\n        [\n          \"Reforming all systems and procedures using modern management techniques and technology, thus ensuring that the functions of the Ministry are fulfilled while eliminating corruption and waste.\",\n          \"Department of Public Finance\",\n          \"Excise Ordinance (Chapter 52)\"\n        ],\n        [\n          \"\",\n          \"Department of Treasury Operations\",\n          \"Finance Leasing Act, No. 56 of 2000\"\n        ],\n        [\n          \"Formulation of national economic and financial policies and strategies\",\n          \"Department of State Accounts\",\n          \"Financial Transactions Reporting Act, No. 6 of 2006\"\n        ],\n        [\n          \"Preparation of national development and public investment programmes\",\n          \"Department of Trade and Investment Policies\",\n          \"Public Fiscal Management (Responsibility) Act, No. 3 of 2003\"\n        ],\n        [\n          \"Formulation of fiscal and macro fiscal management policies\",\n          \"Department of Information Technology Management\",\n          \"Regulation of Insurance Industry Act, No. 43 of 2000\"\n        ],\n        [\n          \"Identify causes for the economic crises and introduce immediate resuscitation remedies and programmes\",\n          \"Department of Legal Affairs\",\n          \"Lady Lochore Fund Act, No. 38 of 1951\"\n        ],\n        [\n          \"Introduce, implement and monitor economic reforms programmes needed to establish a stable and sustainable economic growth in the country.\",\n          \"Department of Management Audit\",\n          \"Local Treasury Bills Ordinance, No. 8 of 1923\"\n        ],\n        [\n          \"Monitor the mechanism for implementation of cross-sectoral national policy priorities.\",\n          \"Department of Development Finance\",\n          \"Nation Building Tax Act, No. 9 of 2009\"\n        ],\n        [\n          \"Function as the Focal Point for facilitation and coordination of international and regional trade integration including bilateral and multilateral trade agreements and resolution of disputes arising from these agreements.\",\n          \"Department of Public Enterprises\",\n          \"Business Names Act, No. 07 of 1987\"\n        ],\n        [\n          \"Preparation of the annual budget and management of financial resources\",\n          \"Office of Comptroller General\",\n          \"Companies Act No. 07 of 2007\"\n        ],\n        [\n          \"\",\n          \"Department of Inland Revenue\",\n          \"Trade Marks Act No. 30 of 1964\"\n        ],\n        [\n          \"\",\n          \"Sri Lanka Customs\",\n          \"Cheetus Ordinance No. 61 of 1935\"\n        ],\n        [\n          \"\",\n          \"Department of Excise\",\n          \"Public Contract Act No. 03 Of 1987\"\n        ],\n        [\n          \"\",\n          \"National Lotteries Board\",\n          \"Prevention of Money Laundering Act, No. 5 of 2006\"\n        ],\n        [\n          \"\",\n          \"Development Lotteries Board\",\n          \"Sri Lanka Accounting and Auditing Standards Act, No. 15 of 1995\"\n        ],\n        [\n          \"\",\n          \"Department of Valuation\",\n          \"Import and Export (Control) Act, No. 1 of 1969\"\n        ],\n        [\n          \"\",\n          \"Import and Export Control Department\",\n          \"Sri Lanka Export Development Act No. 40 of 1979\"\n        ],\n        [\n          \"\",\n          \"Sri Lanka Export Development Board\",\n          \"\"\n        ],\n        [\n          \"\",\n          \"Central Bank of Sri Lanka\",\n          \"\"\n        ],\n        [\n          \"\",\n          \"All State Banks, Financial Institutions, Insurance Companies and their subsidiaries and related institutions\",\n          \"\"\n        ]\n      ]\n    }\n  ]\n}\n```",
+  "message": "Extraction complete"
+}

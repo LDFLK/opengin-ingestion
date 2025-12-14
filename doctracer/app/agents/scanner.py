@@ -15,24 +15,28 @@ class Agent1:
     def __init__(self, fs_manager):
         self.fs_manager = fs_manager
 
-    def run(self, pipeline_name: str, prompt: str):
-        logger.info(f"Agent 1: Starting scanning for '{pipeline_name}'")
-        metadata = self.fs_manager.load_metadata(pipeline_name)
+    def run(self, pipeline_name: str, run_id: str, prompt: str):
+        logger.info(f"Agent 1: Starting scanning for '{pipeline_name}' run '{run_id}'")
+        metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
         input_path = metadata.get("input_file")
         
         if not input_path or not os.path.exists(input_path):
             raise FileNotFoundError(f"Input file not found: {input_path}")
             
         # Split PDF
-        pages_dir = os.path.join(self.fs_manager._get_pipeline_path(pipeline_name), "input", "pages")
+        # Accessing protected member _get_pipeline_path is not ideal, but we'll stick to it for now
+        pages_dir = os.path.join(self.fs_manager._get_pipeline_path(pipeline_name, run_id), "input", "pages")
         os.makedirs(pages_dir, exist_ok=True)
         
         page_files = self._split_pdf(input_path, pages_dir)
         
         # Update metadata with page count
         metadata["page_count"] = len(page_files)
-        self.fs_manager.save_metadata(pipeline_name, metadata)
+        self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
         
+        import io
+        import csv
+
         # Extract Data for each page
         for i, page_path in enumerate(page_files):
             page_num = i + 1
@@ -43,30 +47,42 @@ class Agent1:
                 raw_response = extract_data_with_gemini(page_path, prompt)
                 
                 # Parse to ensure valid structure
-                # We reuse the schema logic to get the objects, then serialize back to dict for storage
                 parsed_result = parse_extraction_response(raw_response)
                 
+                tables_data = []
+                for t in parsed_result.tables:
+                    # Convert to CSV string
+                    output = io.StringIO()
+                    writer = csv.writer(output)
+                    
+                    # Write header
+                    if t.columns:
+                        writer.writerow(t.columns)
+                    
+                    # Write rows
+                    if t.rows:
+                        # Ensure row items are strings
+                        sanitized_rows = [[str(c) if c is not None else "" for c in row] for row in t.rows]
+                        writer.writerows(sanitized_rows)
+                        
+                    tables_data.append({
+                        "id": t.id,
+                        "name": t.name,
+                        "csv": output.getvalue()
+                    })
+
                 page_data = {
                     "page_num": page_num,
-                    "tables": [
-                        {
-                            "id": t.id,
-                            "name": t.name,
-                            "columns": t.columns,
-                            "rows": t.rows
-                        } 
-                        for t in parsed_result.tables
-                    ],
+                    "tables": tables_data,
                     "raw_response": parsed_result.raw_response,
                     "message": parsed_result.message
                 }
                 
-                self.fs_manager.save_intermediate_result(pipeline_name, page_num, page_data)
+                self.fs_manager.save_intermediate_result(pipeline_name, run_id, page_num, page_data)
                 
             except Exception as e:
                 logger.error(f"Agent 1: Failed on page {page_num} - {e}")
-                # Save error state for this page?
-                self.fs_manager.save_intermediate_result(pipeline_name, page_num, {"error": str(e)})
+                self.fs_manager.save_intermediate_result(pipeline_name, run_id, page_num, {"error": str(e)})
 
         logger.info(f"Agent 1: Completed scanning for '{pipeline_name}'")
 

@@ -47,3 +47,27 @@ mutation UploadAndExtract($file: Upload!, $prompt: String!) {
   }
 }
 ```
+
+## Pipeline Management CLI
+
+A dedicated CLI tool is available to manage pipeline runs, debug issues, and clean up old data.
+
+### Commands
+
+**List Runs**
+View all pipeline runs and their status:
+```bash
+python app/cli.py list-runs
+```
+
+**Run Info**
+Get detailed information about a specific run, including generated output files:
+```bash
+python app/cli.py info <pipeline_name> <run_id>
+```
+
+**Delete Run**
+Delete a run and its associated data:
+```bash
+python app/cli.py delete <pipeline_name> <run_id>
+```

@@ -1,0 +1,59 @@
+{
+  "page_num": 3,
+  "tables": [
+    {
+      "id": "table-1",
+      "name": "Minister of Defence (Contd.)",
+      "columns": [
+        "Column I Duties & Functions",
+        "Column II Departments, Statutory Institutions & Public Corporations",
+        "Column III Laws and Ordinance to be Implemented"
+      ],
+      "rows": [
+        [
+          "25. Encourage research and development into appropriate technology for housing and construction sector",
+          "",
+          ""
+        ],
+        [
+          "26. Promote sustained development in the telecommunication industry by shaping the regulatory process, protecting public interest and being responsive to challenges in an increasingly competitive market",
+          "",
+          ""
+        ],
+        [
+          "27. All other subjects that come under the purview of Institutions listed in Column II",
+          "",
+          ""
+        ],
+        [
+          "28. Supervision of all the Institutions listed in Column II",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "table-2",
+      "name": "Minister of Finance, Economic Stabilization and National Policies",
+      "columns": [
+        "Column I Duties & Functions",
+        "Column II Departments, Statutory Institutions & Public Corporations",
+        "Column III Laws and Ordinance to be Implemented"
+      ],
+      "rows": [
+        [
+          "1. Formulation, implementation, monitoring and evaluation of policies, programmes and projects, in relation to the subjects of Finance, Economic Stabilization and Taxation and those subjects that come under the purview of Departments, Statutory Institutions and Public Corporations listed in Column II based on the national policies implemented by the government.",
+          "1. National Planning Department\n2. Department of Project Management and Monitoring\n3. Department of External Resources\n4. State Resources Management Corporation\n5. General Treasury\n6. Department of Fiscal Policy\n7. Department of National Budget\n8. Department of Management Services",
+          "\u2022 Appropriation Acts\n\u2022 Customs Ordinance, No. 17 of 1956\n\u2022 Foreign Loans Act, No. 29 of 1957\n\u2022 Debits Tax Act, No. 12 of 2007\n\u2022 Betting and Gaming Levy Act, No. 40 of 1998\n\u2022 Economic Service Charge Act, No. 13 of 2006\n\u2022 Public Service Mutual Provident Association Ordinance, No. 5 of 1891"
+        ],
+        [
+          "2. Provision of public services under the purview of the Ministry in an efficient and people friendly manner",
+          "",
+          ""
+        ]
+      ]
+    }
+  ],
+  "raw_response": "```json\n{\n  \"tables\": [\n    {\n      \"id\": \"table-1\",\n      \"name\": \"Minister of Defence (Contd.)\",\n      \"columns\": [\n        \"Column I Duties & Functions\",\n        \"Column II Departments, Statutory Institutions & Public Corporations\",\n        \"Column III Laws and Ordinance to be Implemented\"\n      ],\n      \"rows\": [\n        [\n          \"25. Encourage research and development into appropriate technology for housing and construction sector\",\n          \"\",\n          \"\"\n        ],\n        [\n          \"26. Promote sustained development in the telecommunication industry by shaping the regulatory process, protecting public interest and being responsive to challenges in an increasingly competitive market\",\n          \"\",\n          \"\"\n        ],\n        [\n          \"27. All other subjects that come under the purview of Institutions listed in Column II\",\n          \"\",\n          \"\"\n        ],\n        [\n          \"28. Supervision of all the Institutions listed in Column II\",\n          \"\",\n          \"\"\n        ]\n      ]\n    },\n    {\n      \"id\": \"table-2\",\n      \"name\": \"Minister of Finance, Economic Stabilization and National Policies\",\n      \"columns\": [\n        \"Column I Duties & Functions\",\n        \"Column II Departments, Statutory Institutions & Public Corporations\",\n        \"Column III Laws and Ordinance to be Implemented\"\n      ],\n      \"rows\": [\n        [\n          \"1. Formulation, implementation, monitoring and evaluation of policies, programmes and projects, in relation to the subjects of Finance, Economic Stabilization and Taxation and those subjects that come under the purview of Departments, Statutory Institutions and Public Corporations listed in Column II based on the national policies implemented by the government.\",\n          \"1. National Planning Department\\n2. Department of Project Management and Monitoring\\n3. Department of External Resources\\n4. State Resources Management Corporation\\n5. General Treasury\\n6. Department of Fiscal Policy\\n7. Department of National Budget\\n8. Department of Management Services\",\n          \"\u2022 Appropriation Acts\\n\u2022 Customs Ordinance, No. 17 of 1956\\n\u2022 Foreign Loans Act, No. 29 of 1957\\n\u2022 Debits Tax Act, No. 12 of 2007\\n\u2022 Betting and Gaming Levy Act, No. 40 of 1998\\n\u2022 Economic Service Charge Act, No. 13 of 2006\\n\u2022 Public Service Mutual Provident Association Ordinance, No. 5 of 1891\"\n        ],\n        [\n          \"2. Provision of public services under the purview of the Ministry in an efficient and people friendly manner\",\n          \"\",\n          \"\"\n        ]\n      ]\n    }\n  ]\n}\n```",
+  "message": "Extraction complete"
+}
