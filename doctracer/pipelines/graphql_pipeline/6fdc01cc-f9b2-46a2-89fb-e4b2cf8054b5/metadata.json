@@ -1,9 +1,0 @@
-{
-  "pipeline_name": "graphql_pipeline",
-  "run_id": "6fdc01cc-f9b2-46a2-89fb-e4b2cf8054b5",
-  "created_at": "2025-12-14 08:36:40.999479",
-  "status": "COMPLETED",
-  "page_count": 7,
-  "current_stage": "EXPORTING",
-  "input_file": "pipelines/graphql_pipeline/6fdc01cc-f9b2-46a2-89fb-e4b2cf8054b5/input/simple.pdf"
-}
