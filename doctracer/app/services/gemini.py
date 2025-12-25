@@ -1,6 +1,6 @@
 import os
 import time
-import json
+
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -14,9 +14,10 @@ if not GOOGLE_API_KEY:
 
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# Use a model that supports file input and JSON generation if possible, 
+# Use a model that supports file input and JSON generation if possible,
 # or just standard robust text generation. 1.5-flash is good for speed/cost.
-MODEL_NAME = "gemini-2.0-flash" 
+MODEL_NAME = "gemini-2.0-flash"
+
 
 def upload_file_to_gemini(file_path: str, mime_type: str = None):
     """Uploads a file to the Gemini Files API."""
@@ -25,9 +26,10 @@ def upload_file_to_gemini(file_path: str, mime_type: str = None):
     print(f"File uploaded: {uploaded_file.display_name} as {uploaded_file.uri}")
     return uploaded_file
 
+
 def wait_for_files_active(files):
     """Waits for the given files to be active.
-    
+
     Some files uploaded to the Gemini API need to be processed before they can
     be used in prompts. The code below waits for this processing to complete.
     """
@@ -42,6 +44,7 @@ def wait_for_files_active(files):
             raise Exception(f"File {file.name} failed to process")
     print("...all files ready")
     print()
+
 
 def extract_data_with_gemini(file_path: str, user_prompt: str):
     """
@@ -89,7 +92,8 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
         " - 'name': a descriptive name for the table (inferred from context or title)\n"
         " - 'columns': a list of strings representing the column headers\n"
         " - 'rows': a list of lists of strings, representing the data rows matching the columns order. \n"
-        "Do not include markdown code blocks (like ```json) in the response if possible, or ensure it is valid JSON inside. "
+        "Do not include markdown code blocks (like ```json) in the response if possible, "
+        "or ensure it is valid JSON inside. "
         f"\n\nUser Request: {user_prompt}"
     )
 

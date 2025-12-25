@@ -1,6 +1,6 @@
 # Document Data Extraction MVP
 
-This project is a Document Data Extraction tool powered by Google Gemini 1.5 Flash (via Google Files API). It exposes a GraphQL API to upload documents and extract structured metadata, tables, and statistics.
+This project is a Document Data Extraction tool powered by Google Gemini 2.0 Flash (via Google Files API). It exposes a GraphQL API to upload documents and extract structured metadata, tables, and statistics.
 
 ## Prerequisites
 
@@ -42,8 +42,12 @@ mutation UploadAndExtract($file: Upload!, $prompt: String!) {
   extractData(file: $file, prompt: $prompt) {
     message
     rawResponse
-    tablesCsv
-    metadataJson
+    tables {
+      id
+      name
+      columns
+      rows
+    }
   }
 }
 ```
