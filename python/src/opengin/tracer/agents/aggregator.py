@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 class Agent2:
     """
     The Aggregator Agent (Agent 2).
-    
+
     This agent is responsible for consolidating extraction results from multiple pages.
     It identifies tables that span across pages by matching their names (case-insensitive)
     and merges their rows into a single unified table structure.

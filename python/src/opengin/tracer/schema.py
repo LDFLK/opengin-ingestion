@@ -12,13 +12,14 @@ from strawberry.file_uploads import Upload
 class Table:
     """
     Represents a single extracted table.
-    
+
     Attributes:
         id (str): A unique identifier for the table.
         name (str): The name or title of the table.
         columns (List[str]): Header names for the table columns.
         rows (List[List[str]]): The data rows, where each row is a list of cell values.
     """
+
     id: str
     name: str
     columns: typing.List[str]
@@ -29,12 +30,13 @@ class Table:
 class ExtractionResult:
     """
     The result of a data extraction operation.
-    
+
     Attributes:
         message (str): A status message or error description.
         raw_response (str): The raw text response from the GenAI model (for debugging).
         tables (List[Table]): The list of structured tables extracted from the document.
     """
+
     message: str
     raw_response: str
     tables: typing.List[Table]
@@ -107,7 +109,7 @@ class Mutation:
     async def extract_data(self, file: Upload, prompt: str, runId: typing.Optional[str] = None) -> ExtractionResult:
         """
         GraphQL Mutation to perform data extraction on an uploaded file.
-        
+
         This mutation integrates with the Agentic Pipeline (Agent0) to process the file.
         It handles:
         1. Saving the uploaded file temporarily.

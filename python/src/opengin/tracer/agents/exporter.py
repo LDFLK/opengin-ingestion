@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class Agent3:
     """
     The Exporter Agent (Agent 3).
-    
+
     This agent is responsible for the final output generation.
     It takes the aggregated table data (from Agent 2) and converts each table
     into a separate CSV file in the 'output' directory.

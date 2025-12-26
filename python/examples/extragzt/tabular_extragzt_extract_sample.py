@@ -15,11 +15,11 @@ import logging
 import os
 import sys
 
+from opengin.tracer.agents.orchestrator import Agent0
+
 # Ensure src is in the python path if running from source without installation
 # This logic is just for convenience in this example
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
-
-from opengin.tracer.agents.orchestrator import Agent0
 
 
 # Configure logging
@@ -67,11 +67,7 @@ def perform_extraction(file_path: str) -> None:
 
         # Start Pipeline
         logger.info(f"Initializing pipeline for file: {file_path}")
-        run_id, metadata = agent0.create_pipeline(
-            pipeline_name,
-            file_path,
-            os.path.basename(file_path)
-        )
+        run_id, metadata = agent0.create_pipeline(pipeline_name, file_path, os.path.basename(file_path))
 
         # Run Extraction
         logger.info(f"Running extraction with Run ID: {run_id}")
@@ -103,6 +99,7 @@ def perform_extraction(file_path: str) -> None:
         logger.error(f"An error occurred during extraction: {e}")
         # If possible, print stack trace
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

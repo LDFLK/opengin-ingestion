@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class FileSystemManager:
     """
     Manages the file system structure for the pipeline.
-    
+
     This class handles the creation, organization, and access of files and directories
     generated during the data extraction pipeline. It ensures a consistent structure
     for each pipeline run.
@@ -55,7 +55,7 @@ class FileSystemManager:
     def initialize_pipeline(self, pipeline_name: str, run_id: str):
         """
         Creates the directory structure for a new pipeline run.
-        
+
         This method creates the necessary subdirectories (input, intermediate,
         aggregated, output) and initializes the metadata file.
 
@@ -206,7 +206,7 @@ class FileSystemManager:
 class Agent0:
     """
     The Orchestrator Agent (Agent 0).
-    
+
     This agent acts as the main controller for the data extraction pipeline.
     It manages the overall flow, state transitions, and coordination between
     sub-agents (Scanner, Aggregator, Exporter).
@@ -215,7 +215,7 @@ class Agent0:
     def __init__(self, base_path: str = "pipelines"):
         """
         Initialize the Orchestrator with its sub-agents.
-        
+
         Args:
             base_path (str): The root directory for storing pipeline data.
         """
@@ -238,7 +238,7 @@ class Agent0:
         """
         Initialize and setup a new extraction pipeline run.
 
-        This step prepares the filesystem, saves the input file, and sets the 
+        This step prepares the filesystem, saves the input file, and sets the
         initial status of the run.
 
         Args:
@@ -275,7 +275,7 @@ class Agent0:
     def run_pipeline(self, pipeline_name: str, run_id: str, prompt: str = "Extract all tables."):
         """
         Executes the full pipeline lifecycle sequentially.
-        
+
         1. Scanning & Extraction (Agent 1)
         2. Aggregation (Agent 2)
         3. Export (Agent 3)
@@ -308,7 +308,7 @@ class Agent0:
     def run_scaning_and_extraction(self, pipeline_name: str, run_id: str, prompt: str):
         """
         Phase 1: Trigger Document Scanning and Extraction.
-        
+
         Delegates to Agent 1 (Scanner) to process the document page by page.
         """
         logger.info(f"Agent 0: Triggering Scanning & Extraction for '{pipeline_name}' run '{run_id}'")
@@ -321,7 +321,7 @@ class Agent0:
     def run_aggregation(self, pipeline_name: str, run_id: str):
         """
         Phase 2: Trigger Result Aggregation.
-        
+
         Delegates to Agent 2 (Aggregator) to combine per-page results.
         """
         logger.info(f"Agent 0: Triggering Aggregation for '{pipeline_name}' run '{run_id}'")
@@ -334,7 +334,7 @@ class Agent0:
     def run_export(self, pipeline_name: str, run_id: str):
         """
         Phase 3: Trigger Final Export.
-        
+
         Delegates to Agent 3 (Exporter) to format and save the final output.
         """
         logger.info(f"Agent 0: Triggering Export for '{pipeline_name}' run '{run_id}'")

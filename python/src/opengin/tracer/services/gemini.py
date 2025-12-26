@@ -22,11 +22,11 @@ MODEL_NAME = "gemini-2.0-flash"
 def upload_file_to_gemini(file_path: str, mime_type: str = None):
     """
     Uploads a file to the Gemini Files API.
-    
+
     Args:
         file_path (str): The local path to the file to upload.
         mime_type (str, optional): The MIME type of the file. Defaults to None (auto-detect).
-        
+
     Returns:
         The uploaded file object from the GenAI library.
     """
@@ -40,13 +40,13 @@ def wait_for_files_active(files):
     """
     Waits for the given files to be active on the Gemini API.
 
-    Files uploaded to Gemini (especially larger PDFs) require processing time 
-    before they can be used in generation requests. This function polls the 
+    Files uploaded to Gemini (especially larger PDFs) require processing time
+    before they can be used in generation requests. This function polls the
     file status until it is 'ACTIVE'.
-    
+
     Args:
         files (list): A list of uploaded file objects.
-        
+
     Raises:
         Exception: If a file fails to process.
     """
@@ -66,18 +66,18 @@ def wait_for_files_active(files):
 def extract_data_with_gemini(file_path: str, user_prompt: str):
     """
     Uploads a file to Gemini and performs data extraction.
-    
+
     This function handles the full interaction lifecycle with the Gemini API:
     1. Checks for API key (exits to Mock Mode if missing).
     2. Uploads the file.
     3. Waits for processing.
     4. Constructs a system prompt enforcing strictly valid JSON output.
     5. Sends the generation request with the user's extraction prompt.
-    
+
     Args:
         file_path (str): Path to the single-page PDF or image.
         user_prompt (str): Specific instructions on what to extract.
-        
+
     Returns:
         str: The raw text response from the model (expected to be JSON).
     """

@@ -12,7 +12,7 @@ PIPELINES_DIR = "pipelines"
 def cli():
     """
     Pipeline Management CLI.
-    
+
     Provides commands to inspect, manage, and clean up pipeline runs and their data.
     """
 
@@ -24,7 +24,7 @@ def get_run_metadata(pipeline_name, run_id):
     Args:
         pipeline_name (str): The name of the pipeline.
         run_id (str): The unique identifier for the run.
-    
+
     Returns:
         dict: The metadata dictionary if found, otherwise None.
     """
@@ -39,7 +39,7 @@ def get_run_metadata(pipeline_name, run_id):
 def list_runs():
     """
     List all pipeline runs.
-    
+
     Scans the 'pipelines' directory and displays a tabular summary of all recorded runs,
     including their status, page count, and creation timestamp.
     """
@@ -173,7 +173,7 @@ def delete_pipeline(pipeline_name):
 def clear_all():
     """
     Delete all pipelines and runs.
-    
+
     WARNING: This action is irreversible and will wipe the entire 'pipelines' directory.
     """
     if os.path.exists(PIPELINES_DIR):

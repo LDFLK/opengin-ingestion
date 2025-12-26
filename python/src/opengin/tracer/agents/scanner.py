@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Agent1:
     """
     The Scanner Agent (Agent 1).
-    
+
     This agent is responsible for the initial processing of the input document.
     Its primary tasks are:
     1. Splitting the input PDF into individual pages.
