@@ -1,4 +1,4 @@
-from app.agents.orchestrator import Agent0
+from opengin.tracer.agents.orchestrator import Agent0
 
 
 def main():

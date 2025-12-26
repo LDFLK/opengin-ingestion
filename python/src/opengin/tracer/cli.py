@@ -110,5 +110,42 @@ def delete(pipeline_name, run_id):
         click.echo(f"Run directory not found: {run_path}")
 
 
+@cli.command()
+@click.argument("pipeline_name")
+@click.confirmation_option(prompt="Are you sure you want to delete this ENTIRE pipeline and all its runs?")
+def delete_pipeline(pipeline_name):
+    """Delete an entire pipeline and all its runs."""
+    pipeline_path = os.path.join(PIPELINES_DIR, pipeline_name)
+    if os.path.exists(pipeline_path):
+        try:
+            shutil.rmtree(pipeline_path)
+            click.echo(f"Deleted pipeline {pipeline_name} and all its runs.")
+        except Exception as e:
+            click.echo(f"Error deleting pipeline: {e}")
+    else:
+        click.echo(f"Pipeline directory not found: {pipeline_name}")
+
+
+@cli.command()
+@click.confirmation_option(prompt="Are you sure you want to delete ALL pipelines and runs? This cannot be undone.")
+def clear_all():
+    """Delete all pipelines and runs."""
+    if os.path.exists(PIPELINES_DIR):
+        try:
+            # Check if there is anything to delete
+            if not os.listdir(PIPELINES_DIR):
+                click.echo("Pipelines directory is already empty.")
+                return
+
+            # Delete entire pipelines directory content or the directory itself and recreate
+            shutil.rmtree(PIPELINES_DIR)
+            os.makedirs(PIPELINES_DIR)
+            click.echo("All pipelines and runs have been cleared.")
+        except Exception as e:
+            click.echo(f"Error clearing all pipelines: {e}")
+    else:
+        click.echo("No pipelines directory found.")
+
+
 if __name__ == "__main__":
     cli()

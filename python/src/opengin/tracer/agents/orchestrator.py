@@ -113,9 +113,9 @@ class Agent0:
 
     def __init__(self, base_path: str = "pipelines"):
         self.fs_manager = FileSystemManager(base_path)
-        from app.agents.aggregator import Agent2
-        from app.agents.exporter import Agent3
-        from app.agents.scanner import Agent1
+        from opengin.tracer.agents.aggregator import Agent2
+        from opengin.tracer.agents.exporter import Agent3
+        from opengin.tracer.agents.scanner import Agent1
 
         self.agent1 = Agent1(self.fs_manager)
         self.agent2 = Agent2(self.fs_manager)

@@ -3,8 +3,8 @@ import os
 
 from pypdf import PdfReader, PdfWriter
 
-from app.schema import parse_extraction_response
-from app.services.gemini import extract_data_with_gemini
+from opengin.tracer.schema import parse_extraction_response
+from opengin.tracer.services.gemini import extract_data_with_gemini
 
 logger = logging.getLogger(__name__)
 

@@ -89,7 +89,7 @@ class Mutation:
 
         try:
             # 2. Use Agent0 Orchestrator
-            from app.agents.orchestrator import Agent0
+            from opengin.tracer.agents.orchestrator import Agent0
 
             agent0 = Agent0()
             pipeline_name = "graphql_pipeline"

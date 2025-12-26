@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
-from app.schema import schema
+from opengin.tracer.schema import schema
 
 app = FastAPI()
 

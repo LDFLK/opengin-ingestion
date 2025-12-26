@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opengin"
+version = "0.1.0"
+description = "Opengin Ingestion Toolkit"
+requires-python = ">=3.10"
+dependencies = [
+    "click",
+    "tabulate"
+]
+
+[project.scripts]
+opengin = "opengin.cli:main"
+
+[project.optional-dependencies]
+tracer = [
+    "fastapi",
+    "uvicorn",
+    "strawberry-graphql[fastapi]",
+    "google-generativeai",
+    "python-dotenv",
+    "pypdf"
+]
+dev = [
+    "black",
+    "isort",
+    "flake8",
+    "autoflake"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+extend-exclude = '''
+/(
+  | \.venv
+  | \.git
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+multi_line_output = 3
+skip = [".venv", ".git", "__pycache__"]
