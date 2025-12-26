@@ -10,14 +10,7 @@ OpenGIN Tracer is built on a **Multi-Agent System** architecture. This design se
 
 The pipeline follows a linear progression:
 
-```mermaid
-graph LR
-    A[Input PDF] --> B(Agent 0: Orchestrator);
-    B --> C(Agent 1: Scanner);
-    C --> D(Agent 2: Aggregator);
-    D --> E(Agent 3: Exporter);
-    E --> F[Structured Output];
-```
+<img src="/img/architecture_diagram.png" alt="Architecture Diagram" width="600"/>
 
 ## The Agents
 

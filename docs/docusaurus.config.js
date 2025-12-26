@@ -12,7 +12,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 const config = {
   title: 'OpenGIN Tracer',
   tagline: 'Tracing Data using GenAI with OpenGIN',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/tracer_logo.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -112,10 +112,14 @@ const config = {
                 label: 'GitHub',
                 href: 'https://github.com/LDFLK/opengin-ingestion',
               },
+              {
+                label: 'Lanka Data Foundation',
+                href: 'https://opendata.lk',
+              },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} OpenGIN Project.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Lanka Data Foundation. Built with OpenGIN.`,
       },
       prism: {
         theme: prismThemes.github,
