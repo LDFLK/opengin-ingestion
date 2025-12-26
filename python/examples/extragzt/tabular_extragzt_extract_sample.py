@@ -17,10 +17,6 @@ import sys
 
 from opengin.tracer.agents.orchestrator import Agent0
 
-# Ensure src is in the python path if running from source without installation
-# This logic is just for convenience in this example
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
