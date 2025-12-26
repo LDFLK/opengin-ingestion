@@ -98,3 +98,31 @@ make format-fix
 ```
 
 **Note**: Please ensure your code passes `make format-check` before submitting a PR.
+
+## 5. Documentation
+
+We use [Docusaurus](https://docusaurus.io/) for our documentation website, located in the `docs/` directory.
+
+### Prerequisites
+- [Node.js](https://nodejs.org/en/download/) (v18 or higher)
+
+### Setup
+Install the necessary dependencies:
+```bash
+cd docs
+npm install
+```
+
+### Running Locally
+Start a local development server. The site will check for changes and automatically reload.
+```bash
+cd docs
+npm start
+```
+
+### Building
+Build the static website for production. The output will be in the `docs/build` directory.
+```bash
+cd docs
+npm run build
+```
