@@ -13,7 +13,7 @@ OpenGIN Tracer is an advanced data extraction pipeline designed to process PDF d
 OpenGIN Tracer automates the tedious task of manually copying data from PDF tables. It leverages a multi-agent architecture to:
 
 1.  **Scan** PDFs and split them into manageable pages.
-2.  **Extract** data from each page using Gemini 1.5 Flash.
+2.  **Extract** data from each page using Gemini 2.0 Flash.
 3.  **Aggregate** the extracted data across all pages.
 4.  **Export** the final results into structured formats like JSON or CSV.
 

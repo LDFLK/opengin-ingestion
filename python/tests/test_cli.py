@@ -91,4 +91,4 @@ def test_delete_run(runner, test_pipeline_data, temp_pipeline_dir):
     assert f"Deleted run {run_id}" in result.output
 
     fs_manager = FileSystemManager(base_path=temp_pipeline_dir)
-    assert not os.path.exists(fs_manager._get_pipeline_path(pipeline_name, run_id))
+    assert not os.path.exists(fs_manager.get_pipeline_path(pipeline_name, run_id))

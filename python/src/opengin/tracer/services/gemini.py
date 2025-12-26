@@ -17,7 +17,7 @@ else:
 
 # Use a model that supports file input and JSON generation if possible,
 # or just standard robust text generation. 1.5-flash is good for speed/cost.
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 
 def upload_file_to_gemini(file_path: str, mime_type: str = None):
@@ -141,6 +141,7 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
     response = client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
 
     # 4. Cleanup
+    # TODO: Evaluate the clean up logic
     # client.files.delete(name=myfile.name)
 
     return response.text

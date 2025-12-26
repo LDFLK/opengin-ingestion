@@ -8,9 +8,9 @@ from opengin.tracer.agents.orchestrator import Agent0
 def test_orchestrator_pipeline_flow(fs_manager, tmp_path):
     # Mock sub-agents
     with (
-        patch("opengin.tracer.agents.scanner.Agent1") as _,
-        patch("opengin.tracer.agents.aggregator.Agent2") as _,
-        patch("opengin.tracer.agents.exporter.Agent3") as _,
+        patch("opengin.tracer.agents.orchestrator.Agent1") as _,
+        patch("opengin.tracer.agents.orchestrator.Agent2") as _,
+        patch("opengin.tracer.agents.orchestrator.Agent3") as _,
     ):
 
         agent0 = Agent0(base_path=str(tmp_path / "pipelines"))
@@ -36,7 +36,7 @@ def test_orchestrator_pipeline_flow(fs_manager, tmp_path):
 
 
 def test_orchestrator_failure_handling(fs_manager, tmp_path):
-    with patch("opengin.tracer.agents.scanner.Agent1") as _:
+    with patch("opengin.tracer.agents.orchestrator.Agent1") as _:
         agent0 = Agent0(base_path=str(tmp_path / "pipelines"))
 
         # Mock Agent1 to raise an exception

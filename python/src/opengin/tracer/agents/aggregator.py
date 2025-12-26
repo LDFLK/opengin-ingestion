@@ -51,18 +51,36 @@ class Agent2:
                 rows = table.get("rows", [])
 
                 # Normalize Name
+                # Normalize Name
                 norm_name = orig_name.strip().lower()
 
-                if norm_name not in aggregated_map:
-                    aggregated_map[norm_name] = {
-                        "name": orig_name,
+                # Find matching table by name AND schema
+                key = norm_name
+                counter = 1
+
+                while key in aggregated_map:
+                    existing_cols = aggregated_map[key]["columns"]
+                    if columns == existing_cols:
+                        break  # Found a match with same name and schema
+
+                    # Schema mismatch, try next variant
+                    logger.warning(
+                        f"Schema mismatch for table '{orig_name}' (key: {key}). "
+                        f"Expected {existing_cols}, got {columns}. Creating variant."
+                    )
+                    key = f"{norm_name}_{counter}"
+                    counter += 1
+
+                if key not in aggregated_map:
+                    aggregated_map[key] = {
+                        "name": orig_name if counter == 1 else f"{orig_name} ({counter-1})",
                         "columns": columns,
                         "rows": [],
                     }
 
                 # Append rows
                 if rows:
-                    aggregated_map[norm_name]["rows"].extend(rows)
+                    aggregated_map[key]["rows"].extend(rows)
 
         # Construct final aggregated list
         aggregated_tables = []

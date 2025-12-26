@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import logging
 import os
@@ -53,14 +55,21 @@ class Agent3:
             table_name = table.get("name", "untitled").replace(" ", "_").lower()
             # Clean filename
             table_name = "".join(c for c in table_name if c.isalnum() or c in ("_", "-"))
-            filename = f"{table_name}.csv"
+
+            # Ensure unique filename
+            base_filename = table_name
+            extension = ".csv"
+            counter = 1
+            filename = f"{base_filename}{extension}"
             filepath = os.path.join(output_dir, filename)
+
+            while os.path.exists(filepath):
+                filename = f"{base_filename}_{counter}{extension}"
+                filepath = os.path.join(output_dir, filename)
+                counter += 1
 
             columns = table.get("columns", [])
             rows = table.get("rows", [])
-
-            import csv
-            import io
 
             output = io.StringIO()
             writer = csv.writer(output)

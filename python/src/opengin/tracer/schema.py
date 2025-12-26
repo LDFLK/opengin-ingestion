@@ -160,10 +160,12 @@ class Mutation:
                 with open(aggregated_path, "r") as f:
                     raw_tables = json.load(f)
 
-                for t in raw_tables:
+                for idx, t in enumerate(raw_tables):
+                    # Generate a unique ID using run_id and index
+                    unique_id = f"{run_id_val}_{idx}"
                     tables.append(
                         Table(
-                            id=str(t.get("name", "table_id")),
+                            id=unique_id,
                             name=t.get("name", "Untitled"),
                             columns=t.get("columns", []),
                             rows=t.get("rows", []),

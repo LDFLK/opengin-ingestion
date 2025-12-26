@@ -5,6 +5,10 @@ import shutil
 from datetime import datetime
 from typing import Any, Dict, List
 
+from opengin.tracer.agents.aggregator import Agent2
+from opengin.tracer.agents.exporter import Agent3
+from opengin.tracer.agents.scanner import Agent1
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +41,7 @@ class FileSystemManager:
         """
         self.base_path = base_path
 
-    def _get_pipeline_path(self, pipeline_name: str, run_id: str) -> str:
+    def get_pipeline_path(self, pipeline_name: str, run_id: str) -> str:
         """
         Constructs the absolute path for a specific pipeline run.
 
@@ -61,7 +65,7 @@ class FileSystemManager:
             pipeline_name (str): The name of the pipeline.
             run_id (str): The unique identifier for the run.
         """
-        path = self._get_pipeline_path(pipeline_name, run_id)
+        path = self.get_pipeline_path(pipeline_name, run_id)
 
         # Create directories
         os.makedirs(os.path.join(path, "input"), exist_ok=True)
@@ -90,7 +94,7 @@ class FileSystemManager:
             run_id (str): The unique identifier for the run.
             metadata (Dict[str, Any]): The metadata dictionary to save.
         """
-        path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "metadata.json")
+        path = os.path.join(self.get_pipeline_path(pipeline_name, run_id), "metadata.json")
         with open(path, "w") as f:
             json.dump(metadata, f, indent=2)
 
@@ -105,7 +109,7 @@ class FileSystemManager:
         Returns:
             Dict[str, Any]: The loaded metadata, or an empty dict if file not found.
         """
-        path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "metadata.json")
+        path = os.path.join(self.get_pipeline_path(pipeline_name, run_id), "metadata.json")
         if not os.path.exists(path):
             return {}
         with open(path, "r") as f:
@@ -125,7 +129,7 @@ class FileSystemManager:
             str: The path to the saved input file within the pipeline structure.
         """
         filename = os.path.basename(filename)
-        dest_path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "input", filename)
+        dest_path = os.path.join(self.get_pipeline_path(pipeline_name, run_id), "input", filename)
         shutil.copy(file_path, dest_path)
         return dest_path
 
@@ -140,7 +144,7 @@ class FileSystemManager:
             data (Any): The extraction result data (usually a dictionary).
         """
         path = os.path.join(
-            self._get_pipeline_path(pipeline_name, run_id),
+            self.get_pipeline_path(pipeline_name, run_id),
             "intermediate",
             f"page_{page_num}.json",
         )
@@ -158,7 +162,7 @@ class FileSystemManager:
         Returns:
             List[Any]: A list of data from all page files, sorted by page number.
         """
-        intermediate_path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "intermediate")
+        intermediate_path = os.path.join(self.get_pipeline_path(pipeline_name, run_id), "intermediate")
         results = []
         if not os.path.exists(intermediate_path):
             return results
@@ -183,7 +187,7 @@ class FileSystemManager:
             run_id (str): The unique identifier for the run.
             data (Any): The combined data from all pages.
         """
-        path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
+        path = os.path.join(self.get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -198,7 +202,7 @@ class FileSystemManager:
         Returns:
             str: The full path to the output directory.
         """
-        return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "output")
+        return os.path.join(self.get_pipeline_path(pipeline_name, run_id), "output")
 
     def get_input_pages_dir(self, pipeline_name: str, run_id: str) -> str:
         """
@@ -211,7 +215,7 @@ class FileSystemManager:
         Returns:
             str: The full path to the input/pages directory.
         """
-        return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "input", "pages")
+        return os.path.join(self.get_pipeline_path(pipeline_name, run_id), "input", "pages")
 
     def get_aggregated_results_path(self, pipeline_name: str, run_id: str) -> str:
         """
@@ -224,7 +228,7 @@ class FileSystemManager:
         Returns:
             str: The full path to the aggregated/tables.json file.
         """
-        return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
+        return os.path.join(self.get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
 
     def list_pipelines(self) -> List[str]:
         """
@@ -265,7 +269,7 @@ class FileSystemManager:
         Returns:
             bool: True if deleted, False if not found.
         """
-        run_path = self._get_pipeline_path(pipeline_name, run_id)
+        run_path = self.get_pipeline_path(pipeline_name, run_id)
         if os.path.exists(run_path):
             shutil.rmtree(run_path)
 
@@ -321,9 +325,6 @@ class Agent0:
             base_path (str): The root directory for storing pipeline data.
         """
         self.fs_manager = FileSystemManager(base_path)
-        from opengin.tracer.agents.aggregator import Agent2
-        from opengin.tracer.agents.exporter import Agent3
-        from opengin.tracer.agents.scanner import Agent1
 
         self.agent1 = Agent1(self.fs_manager)
         self.agent2 = Agent2(self.fs_manager)

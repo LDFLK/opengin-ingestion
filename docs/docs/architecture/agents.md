@@ -25,7 +25,7 @@ The Scanner extracts raw data from the source document.
 - **Process**:
     1.  Splits the PDF into single-page PDF files using `pypdf`.
     2.  Iterates through each page.
-    3.  Sends the page to **Google Gemini 1.5 Flash** with a prompt to "Extract all tables".
+    3.  Sends the page to **Google Gemini 2.0 Flash** (configurable via environment variable) with a prompt to "Extract all tables".
     4.  Parses the JSON response from Gemini.
 - **Output**: A collection of JSON files in the `intermediate/` directory, one per page.
 
