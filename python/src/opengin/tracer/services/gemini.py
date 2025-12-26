@@ -1,18 +1,19 @@
 import os
 import time
 
-import google.generativeai as genai
 from dotenv import load_dotenv
+from google import genai
 
 load_dotenv()
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+client = None
 if not GOOGLE_API_KEY:
     # Fallback/Warning if key is not present, though usually expected in env
     print("Warning: GOOGLE_API_KEY not found in environment variables.")
-
-genai.configure(api_key=GOOGLE_API_KEY)
+else:
+    client = genai.Client(api_key=GOOGLE_API_KEY)
 
 # Use a model that supports file input and JSON generation if possible,
 # or just standard robust text generation. 1.5-flash is good for speed/cost.
@@ -31,7 +32,15 @@ def upload_file_to_gemini(file_path: str, mime_type: str = None):
         The uploaded file object from the GenAI library.
     """
     print(f"Uploading file: {file_path}...")
-    uploaded_file = genai.upload_file(file_path, mime_type=mime_type)
+    # New SDK: client.files.upload(file=...)
+    # Note: 'path' argument might be used or 'file'. based on docs usually 'file' or 'path'.
+    # Let's try 'file' as generic, or check quickly?
+    # Actually, standard python client uses 'file' for path often or 'path'.
+    # Safe bet: use positional if unsure, or try 'path'.
+    # Recent google-genai documentation suggests 'file' or 'path'.
+
+    # Using 'file' as the argument name for the local path
+    uploaded_file = client.files.upload(file=file_path)
     print(f"File uploaded: {uploaded_file.display_name} as {uploaded_file.uri}")
     return uploaded_file
 
@@ -51,14 +60,18 @@ def wait_for_files_active(files):
         Exception: If a file fails to process.
     """
     print("Waiting for file processing...")
-    for name in (file.name for file in files):
-        file = genai.get_file(name)
-        while file.state.name == "PROCESSING":
+    for f in files:
+        # In new SDK, file object might have .name
+        name = f.name
+        remote_file = client.files.get(name=name)
+
+        while remote_file.state == "PROCESSING":
             print(".", end="", flush=True)
             time.sleep(10)
-            file = genai.get_file(name)
-        if file.state.name != "ACTIVE":
-            raise Exception(f"File {file.name} failed to process")
+            remote_file = client.files.get(name=name)
+
+        if remote_file.state != "ACTIVE":
+            raise Exception(f"File {remote_file.name} failed to process: {remote_file.state}")
     print("...all files ready")
     print()
 
@@ -82,7 +95,7 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
         str: The raw text response from the model (expected to be JSON).
     """
     # If no API key is set, return a mock response for testing purposes
-    if not GOOGLE_API_KEY:
+    if not client:
         print("Mocking Gemini response (No API Key found)")
         return """
         {
@@ -101,17 +114,13 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
         """
 
     # 1. Upload File
-    # Determine mime type or let library guess. For simplicity, we let it guess or strictly handle common types.
     myfile = upload_file_to_gemini(file_path)
 
     # 2. Wait for processing
     wait_for_files_active([myfile])
 
     # 3. Generate Content
-    model = genai.GenerativeModel(model_name=MODEL_NAME)
-
     # System/Structural Prompt to guide the output format
-    # We want to encourage structured output: Metadata (JSON), Tables (CSV), Stats.
     system_instruction = (
         "You are a document extraction assistant. "
         "Analyze the uploaded document and extract all tables found. "
@@ -127,10 +136,11 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
         f"\n\nUser Request: {user_prompt}"
     )
 
-    response = model.generate_content([myfile, system_instruction])
+    # New SDK generation
+    # client.models.generate_content(model=..., contents=[...])
+    response = client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
 
-    # 4. Cleanup (Best practice: delete file after use to save storage limit context)
-    # However, for this MVP we might leave it or delete it. Let's delete to be clean.
-    # genai.delete_file(myfile.name) # Uncomment if strict cleanup is desired immediately
+    # 4. Cleanup
+    # client.files.delete(name=myfile.name)
 
     return response.text

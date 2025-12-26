@@ -106,7 +106,7 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def extract_data(self, file: Upload, prompt: str, runId: typing.Optional[str] = None) -> ExtractionResult:
+    async def extract_data(self, file: Upload, prompt: str, run_id: typing.Optional[str] = None) -> ExtractionResult:
         """
         GraphQL Mutation to perform data extraction on an uploaded file.
 
@@ -120,7 +120,7 @@ class Mutation:
         Args:
             file (Upload): The file to process.
             prompt (str): The extraction instructions.
-            runId (str, optional): A custom ID for the run.
+            run_id (str, optional): A custom ID for the run.
 
         Returns:
             ExtractionResult: The extracted data and status.
@@ -143,21 +143,17 @@ class Mutation:
             pipeline_name = "graphql_pipeline"
 
             # Create pipeline (this handles run_id generation if None)
-            run_id, metadata = agent0.create_pipeline(
-                pipeline_name, tmp_path, file.filename or "uploaded.pdf", run_id=runId
+            run_id_val, metadata = agent0.create_pipeline(
+                pipeline_name, tmp_path, file.filename or "uploaded.pdf", run_id=run_id
             )
 
             # Run pipeline
-            agent0.run_pipeline(pipeline_name, run_id, prompt)
+            agent0.run_pipeline(pipeline_name, run_id_val, prompt)
 
             # 3. Read Aggregated Results
             # We need to construct the result from the aggregated JSON
             fs_manager = agent0.fs_manager
-            aggregated_path = os.path.join(
-                fs_manager._get_pipeline_path(pipeline_name, run_id),
-                "aggregated",
-                "tables.json",
-            )
+            aggregated_path = fs_manager.get_aggregated_results_path(pipeline_name, run_id_val)
 
             tables = []
             if os.path.exists(aggregated_path):
@@ -175,7 +171,7 @@ class Mutation:
                     )
 
             return ExtractionResult(
-                message=f"Pipeline run '{run_id}' completed successfully.",
+                message=f"Pipeline run '{run_id_val}' completed successfully.",
                 raw_response="Processed via Agentic Pipeline",
                 tables=tables,
             )

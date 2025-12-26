@@ -1,11 +1,10 @@
 import json
 import os
-import shutil
 
 import click
 from tabulate import tabulate
 
-PIPELINES_DIR = "pipelines"
+from opengin.tracer.agents.orchestrator import FileSystemManager
 
 
 @click.group()
@@ -17,24 +16,6 @@ def cli():
     """
 
 
-def get_run_metadata(pipeline_name, run_id):
-    """
-    Helper function to load metadata for a specific run.
-
-    Args:
-        pipeline_name (str): The name of the pipeline.
-        run_id (str): The unique identifier for the run.
-
-    Returns:
-        dict: The metadata dictionary if found, otherwise None.
-    """
-    metadata_path = os.path.join(PIPELINES_DIR, pipeline_name, run_id, "metadata.json")
-    if os.path.exists(metadata_path):
-        with open(metadata_path, "r") as f:
-            return json.load(f)
-    return None
-
-
 @cli.command()
 def list_runs():
     """
@@ -43,23 +24,19 @@ def list_runs():
     Scans the 'pipelines' directory and displays a tabular summary of all recorded runs,
     including their status, page count, and creation timestamp.
     """
-    if not os.path.exists(PIPELINES_DIR):
-        click.echo("No pipelines directory found.")
+    fs_manager = FileSystemManager()
+    pipelines = fs_manager.list_pipelines()
+
+    if not pipelines:
+        click.echo("No runs found.")
         return
 
     runs_data = []
 
-    for pipeline_name in os.listdir(PIPELINES_DIR):
-        pipeline_path = os.path.join(PIPELINES_DIR, pipeline_name)
-        if not os.path.isdir(pipeline_path):
-            continue
-
-        for run_id in os.listdir(pipeline_path):
-            run_path = os.path.join(pipeline_path, run_id)
-            if not os.path.isdir(run_path):
-                continue
-
-            metadata = get_run_metadata(pipeline_name, run_id)
+    for pipeline_name in pipelines:
+        run_ids = fs_manager.list_runs(pipeline_name)
+        for run_id in run_ids:
+            metadata = fs_manager.load_metadata(pipeline_name, run_id)
             if metadata:
                 runs_data.append(
                     [
@@ -99,12 +76,14 @@ def info(pipeline_name, run_id):
         pipeline_name (str): The name of the pipeline.
         run_id (str): The unique identifier for the run.
     """
-    metadata = get_run_metadata(pipeline_name, run_id)
+    fs_manager = FileSystemManager()
+    metadata = fs_manager.load_metadata(pipeline_name, run_id)
+
     if metadata:
         click.echo(json.dumps(metadata, indent=2))
 
         # Also list output files
-        output_dir = os.path.join(PIPELINES_DIR, pipeline_name, run_id, "output")
+        output_dir = fs_manager.get_output_path(pipeline_name, run_id)
         if os.path.exists(output_dir):
             click.echo("\nOutput Files:")
             for f in os.listdir(output_dir):
@@ -128,23 +107,11 @@ def delete(pipeline_name, run_id):
         pipeline_name (str): The name of the pipeline.
         run_id (str): The unique identifier for the run.
     """
-    run_path = os.path.join(PIPELINES_DIR, pipeline_name, run_id)
-    if os.path.exists(run_path):
-        try:
-            shutil.rmtree(run_path)
-            click.echo(f"Deleted run {run_id} from pipeline {pipeline_name}.")
-
-            # Use os.rmdir to remove pipeline dir if empty, but suppress error if not empty
-            pipeline_path = os.path.join(PIPELINES_DIR, pipeline_name)
-            try:
-                os.rmdir(pipeline_path)
-            except OSError:
-                pass
-
-        except Exception as e:
-            click.echo(f"Error deleting run: {e}")
+    fs_manager = FileSystemManager()
+    if fs_manager.delete_run(pipeline_name, run_id):
+        click.echo(f"Deleted run {run_id} from pipeline {pipeline_name}.")
     else:
-        click.echo(f"Run directory not found: {run_path}")
+        click.echo(f"Run directory not found for pipeline {pipeline_name} run {run_id}")
 
 
 @cli.command()
@@ -157,13 +124,9 @@ def delete_pipeline(pipeline_name):
     Args:
         pipeline_name (str): The name of the pipeline to delete.
     """
-    pipeline_path = os.path.join(PIPELINES_DIR, pipeline_name)
-    if os.path.exists(pipeline_path):
-        try:
-            shutil.rmtree(pipeline_path)
-            click.echo(f"Deleted pipeline {pipeline_name} and all its runs.")
-        except Exception as e:
-            click.echo(f"Error deleting pipeline: {e}")
+    fs_manager = FileSystemManager()
+    if fs_manager.delete_pipeline(pipeline_name):
+        click.echo(f"Deleted pipeline {pipeline_name} and all its runs.")
     else:
         click.echo(f"Pipeline directory not found: {pipeline_name}")
 
@@ -176,21 +139,17 @@ def clear_all():
 
     WARNING: This action is irreversible and will wipe the entire 'pipelines' directory.
     """
-    if os.path.exists(PIPELINES_DIR):
-        try:
-            # Check if there is anything to delete
-            if not os.listdir(PIPELINES_DIR):
-                click.echo("Pipelines directory is already empty.")
-                return
+    fs_manager = FileSystemManager()
+    try:
+        # Check if there is anything to delete
+        if not fs_manager.list_pipelines():
+            click.echo("Pipelines directory is already empty.")
+            return
 
-            # Delete entire pipelines directory content or the directory itself and recreate
-            shutil.rmtree(PIPELINES_DIR)
-            os.makedirs(PIPELINES_DIR)
-            click.echo("All pipelines and runs have been cleared.")
-        except Exception as e:
-            click.echo(f"Error clearing all pipelines: {e}")
-    else:
-        click.echo("No pipelines directory found.")
+        fs_manager.clear_all()
+        click.echo("All pipelines and runs have been cleared.")
+    except Exception as e:
+        click.echo(f"Error clearing all pipelines: {e}")
 
 
 if __name__ == "__main__":

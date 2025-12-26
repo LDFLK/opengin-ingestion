@@ -39,11 +39,7 @@ class Agent3:
         logger.info(f"Agent 3: Starting export for '{pipeline_name}' run '{run_id}'")
 
         # Load aggregated results
-        aggregated_path = os.path.join(
-            self.fs_manager._get_pipeline_path(pipeline_name, run_id),
-            "aggregated",
-            "tables.json",
-        )
+        aggregated_path = self.fs_manager.get_aggregated_results_path(pipeline_name, run_id)
         if not os.path.exists(aggregated_path):
             logger.warning("No aggregated tables found to export.")
             return
@@ -79,5 +75,10 @@ class Agent3:
                 f.write(output.getvalue())
 
             logger.info(f"Agent 3: Exported {filename}")
+
+        # Update metadata to status COMPLETED
+        metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
+        metadata["status"] = "COMPLETED"
+        self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
         logger.info(f"Agent 3: Completed export for '{pipeline_name}' run '{run_id}'")

@@ -51,8 +51,7 @@ class Agent1:
             raise FileNotFoundError(f"Input file not found: {input_path}")
 
         # Split PDF
-        # Accessing protected member _get_pipeline_path is not ideal, but we'll stick to it for now
-        pages_dir = os.path.join(self.fs_manager._get_pipeline_path(pipeline_name, run_id), "input", "pages")
+        pages_dir = self.fs_manager.get_input_pages_dir(pipeline_name, run_id)
         os.makedirs(pages_dir, exist_ok=True)
 
         page_files = self._split_pdf(input_path, pages_dir)

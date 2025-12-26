@@ -5,8 +5,6 @@ import shutil
 from datetime import datetime
 from typing import Any, Dict, List
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -202,6 +200,109 @@ class FileSystemManager:
         """
         return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "output")
 
+    def get_input_pages_dir(self, pipeline_name: str, run_id: str) -> str:
+        """
+        Returns the path to the directory where split PDF pages are stored.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            str: The full path to the input/pages directory.
+        """
+        return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "input", "pages")
+
+    def get_aggregated_results_path(self, pipeline_name: str, run_id: str) -> str:
+        """
+        Returns the path to the aggregated tables JSON file.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            str: The full path to the aggregated/tables.json file.
+        """
+        return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
+
+    def list_pipelines(self) -> List[str]:
+        """
+        Lists all available pipeline names.
+
+        Returns:
+            List[str]: A list of pipeline names found in the base directory.
+        """
+        if not os.path.exists(self.base_path):
+            return []
+
+        return [d for d in os.listdir(self.base_path) if os.path.isdir(os.path.join(self.base_path, d))]
+
+    def list_runs(self, pipeline_name: str) -> List[str]:
+        """
+        Lists all run IDs for a specific pipeline.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+
+        Returns:
+            List[str]: A list of run IDs found for the pipeline.
+        """
+        pipeline_path = os.path.join(self.base_path, pipeline_name)
+        if not os.path.exists(pipeline_path):
+            return []
+
+        return [d for d in os.listdir(pipeline_path) if os.path.isdir(os.path.join(pipeline_path, d))]
+
+    def delete_run(self, pipeline_name: str, run_id: str) -> bool:
+        """
+        Deletes a specific run directory.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            bool: True if deleted, False if not found.
+        """
+        run_path = self._get_pipeline_path(pipeline_name, run_id)
+        if os.path.exists(run_path):
+            shutil.rmtree(run_path)
+
+            # Clean up pipeline dir if empty
+            pipeline_path = os.path.join(self.base_path, pipeline_name)
+            try:
+                if not os.listdir(pipeline_path):
+                    os.rmdir(pipeline_path)
+            except OSError:
+                pass
+            return True
+        return False
+
+    def delete_pipeline(self, pipeline_name: str) -> bool:
+        """
+        Deletes an entire pipeline directory.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+
+        Returns:
+            bool: True if deleted, False if not found.
+        """
+        pipeline_path = os.path.join(self.base_path, pipeline_name)
+        if os.path.exists(pipeline_path):
+            shutil.rmtree(pipeline_path)
+            return True
+        return False
+
+    def clear_all(self):
+        """
+        Deletes all pipelines and runs.
+        """
+        if os.path.exists(self.base_path):
+            shutil.rmtree(self.base_path)
+            os.makedirs(self.base_path)
+
 
 class Agent0:
     """
@@ -294,7 +395,9 @@ class Agent0:
 
             # Temporary success status update
             metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
-            metadata["status"] = "COMPLETED"  # Should be done by last agent
+            # TODO: Evaluate whether the complete status must be checked by the
+            #       orchestrator or if it should be done by the exporter.
+            metadata["status"] = "COMPLETED"
             self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
         except Exception as e:
