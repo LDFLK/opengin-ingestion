@@ -7,14 +7,35 @@ logger = logging.getLogger(__name__)
 
 class Agent3:
     """
-    The Exporter Agent.
-    Responsible for converting aggregated tables into CSV files.
+    The Exporter Agent (Agent 3).
+    
+    This agent is responsible for the final output generation.
+    It takes the aggregated table data (from Agent 2) and converts each table
+    into a separate CSV file in the 'output' directory.
     """
 
     def __init__(self, fs_manager):
+        """
+        Initialize the Exporter Agent.
+
+        Args:
+            fs_manager (FileSystemManager): Instance for handling file operations.
+        """
         self.fs_manager = fs_manager
 
     def run(self, pipeline_name: str, run_id: str):
+        """
+        Executes the export phase.
+
+        1. Loads the aggregated tables from the 'aggregated' directory.
+        2. Iterates through each table.
+        3. Sanitizes the table name to create a valid filename.
+        4. Writes the table content (headers and rows) to a CSV file.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+        """
         logger.info(f"Agent 3: Starting export for '{pipeline_name}' run '{run_id}'")
 
         # Load aggregated results

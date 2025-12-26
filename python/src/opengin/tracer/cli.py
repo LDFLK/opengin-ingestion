@@ -10,10 +10,24 @@ PIPELINES_DIR = "pipelines"
 
 @click.group()
 def cli():
-    """Pipeline Management CLI"""
+    """
+    Pipeline Management CLI.
+    
+    Provides commands to inspect, manage, and clean up pipeline runs and their data.
+    """
 
 
 def get_run_metadata(pipeline_name, run_id):
+    """
+    Helper function to load metadata for a specific run.
+
+    Args:
+        pipeline_name (str): The name of the pipeline.
+        run_id (str): The unique identifier for the run.
+    
+    Returns:
+        dict: The metadata dictionary if found, otherwise None.
+    """
     metadata_path = os.path.join(PIPELINES_DIR, pipeline_name, run_id, "metadata.json")
     if os.path.exists(metadata_path):
         with open(metadata_path, "r") as f:
@@ -23,7 +37,12 @@ def get_run_metadata(pipeline_name, run_id):
 
 @cli.command()
 def list_runs():
-    """List all pipeline runs."""
+    """
+    List all pipeline runs.
+    
+    Scans the 'pipelines' directory and displays a tabular summary of all recorded runs,
+    including their status, page count, and creation timestamp.
+    """
     if not os.path.exists(PIPELINES_DIR):
         click.echo("No pipelines directory found.")
         return
@@ -70,7 +89,16 @@ def list_runs():
 @click.argument("pipeline_name")
 @click.argument("run_id")
 def info(pipeline_name, run_id):
-    """Show details for a specific run."""
+    """
+    Show details for a specific run.
+
+    Displays the full metadata JSON and lists the generated output files (CSVs)
+    for the specified pipeline run.
+
+    Args:
+        pipeline_name (str): The name of the pipeline.
+        run_id (str): The unique identifier for the run.
+    """
     metadata = get_run_metadata(pipeline_name, run_id)
     if metadata:
         click.echo(json.dumps(metadata, indent=2))
@@ -90,7 +118,16 @@ def info(pipeline_name, run_id):
 @click.argument("run_id")
 @click.confirmation_option(prompt="Are you sure you want to delete this run?")
 def delete(pipeline_name, run_id):
-    """Delete a specific run directory."""
+    """
+    Delete a specific run directory.
+
+    Removes all data associated with a single run (metadata, input, intermediate, output).
+    If the pipeline directory becomes empty after deletion, it is also removed.
+
+    Args:
+        pipeline_name (str): The name of the pipeline.
+        run_id (str): The unique identifier for the run.
+    """
     run_path = os.path.join(PIPELINES_DIR, pipeline_name, run_id)
     if os.path.exists(run_path):
         try:
@@ -114,7 +151,12 @@ def delete(pipeline_name, run_id):
 @click.argument("pipeline_name")
 @click.confirmation_option(prompt="Are you sure you want to delete this ENTIRE pipeline and all its runs?")
 def delete_pipeline(pipeline_name):
-    """Delete an entire pipeline and all its runs."""
+    """
+    Delete an entire pipeline and all its runs.
+
+    Args:
+        pipeline_name (str): The name of the pipeline to delete.
+    """
     pipeline_path = os.path.join(PIPELINES_DIR, pipeline_name)
     if os.path.exists(pipeline_path):
         try:
@@ -129,7 +171,11 @@ def delete_pipeline(pipeline_name):
 @cli.command()
 @click.confirmation_option(prompt="Are you sure you want to delete ALL pipelines and runs? This cannot be undone.")
 def clear_all():
-    """Delete all pipelines and runs."""
+    """
+    Delete all pipelines and runs.
+    
+    WARNING: This action is irreversible and will wipe the entire 'pipelines' directory.
+    """
     if os.path.exists(PIPELINES_DIR):
         try:
             # Check if there is anything to delete

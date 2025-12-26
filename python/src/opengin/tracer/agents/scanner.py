@@ -11,14 +11,38 @@ logger = logging.getLogger(__name__)
 
 class Agent1:
     """
-    The Scanner Agent.
-    Responsible for splitting documents and extracting data per page.
+    The Scanner Agent (Agent 1).
+    
+    This agent is responsible for the initial processing of the input document.
+    Its primary tasks are:
+    1. Splitting the input PDF into individual pages.
+    2. Sending each page to the GenAI service (Gemini) for data extraction based on the prompt.
+    3. Saving the raw and parsed extraction results to the 'intermediate' directory.
     """
 
     def __init__(self, fs_manager):
+        """
+        Initialize the Scanner Agent.
+
+        Args:
+            fs_manager (FileSystemManager): Instance for handling file operations.
+        """
         self.fs_manager = fs_manager
 
     def run(self, pipeline_name: str, run_id: str, prompt: str):
+        """
+        Executes the scanning and extraction phase.
+
+        Iterates through each page of the split PDF and performs extraction.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+            prompt (str): The extraction prompt to send to the LLM.
+
+        Raises:
+            FileNotFoundError: If the input file recorded in metadata does not exist.
+        """
         logger.info(f"Agent 1: Starting scanning for '{pipeline_name}' run '{run_id}'")
         metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
         input_path = metadata.get("input_file")
@@ -76,6 +100,16 @@ class Agent1:
         logger.info(f"Agent 1: Completed scanning for '{pipeline_name}'")
 
     def _split_pdf(self, input_path: str, output_dir: str) -> list[str]:
+        """
+        Splits a multipage PDF into individual single-page PDFs.
+
+        Args:
+            input_path (str): Path to the source PDF.
+            output_dir (str): Directory to save the split pages.
+
+        Returns:
+            list[str]: A list of file paths for the generated single-page PDFs.
+        """
         reader = PdfReader(input_path)
         page_files = []
 

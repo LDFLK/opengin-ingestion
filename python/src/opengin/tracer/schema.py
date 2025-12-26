@@ -10,6 +10,15 @@ from strawberry.file_uploads import Upload
 
 @strawberry.type
 class Table:
+    """
+    Represents a single extracted table.
+    
+    Attributes:
+        id (str): A unique identifier for the table.
+        name (str): The name or title of the table.
+        columns (List[str]): Header names for the table columns.
+        rows (List[List[str]]): The data rows, where each row is a list of cell values.
+    """
     id: str
     name: str
     columns: typing.List[str]
@@ -18,6 +27,14 @@ class Table:
 
 @strawberry.type
 class ExtractionResult:
+    """
+    The result of a data extraction operation.
+    
+    Attributes:
+        message (str): A status message or error description.
+        raw_response (str): The raw text response from the GenAI model (for debugging).
+        tables (List[Table]): The list of structured tables extracted from the document.
+    """
     message: str
     raw_response: str
     tables: typing.List[Table]
@@ -25,8 +42,19 @@ class ExtractionResult:
 
 def parse_extraction_response(raw_text: str) -> ExtractionResult:
     """
-    Parses the raw text from Gemini which is expected to be a JSON string
-    containing the table structure.
+    Parses the raw JSON response from Gemini into a structured ExtractionResult.
+
+    This function handles:
+    1. cleaning markdown code blocks (e.g., ```json ... ```).
+    2. parsing the JSON string.
+    3. mapping the JSON data to the `Table` and `ExtractionResult` objects.
+    4. handling JSON decoding errors.
+
+    Args:
+        raw_text (str): The raw string output from the LLM.
+
+    Returns:
+        ExtractionResult: The structured result containing tables or error messages.
     """
     tables = []
     message = "Extraction complete"
@@ -77,6 +105,24 @@ class Query:
 class Mutation:
     @strawberry.mutation
     async def extract_data(self, file: Upload, prompt: str, runId: typing.Optional[str] = None) -> ExtractionResult:
+        """
+        GraphQL Mutation to perform data extraction on an uploaded file.
+        
+        This mutation integrates with the Agentic Pipeline (Agent0) to process the file.
+        It handles:
+        1. Saving the uploaded file temporarily.
+        2. Initializing and running the Agent0 pipeline.
+        3. Retrieving the final aggregated results from the filesystem.
+        4. Returning a structured response.
+
+        Args:
+            file (Upload): The file to process.
+            prompt (str): The extraction instructions.
+            runId (str, optional): A custom ID for the run.
+
+        Returns:
+            ExtractionResult: The extracted data and status.
+        """
         # 1. Save uploaded file to temp
         suffix = ""
         if file.filename:

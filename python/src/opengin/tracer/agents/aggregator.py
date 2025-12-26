@@ -5,14 +5,35 @@ logger = logging.getLogger(__name__)
 
 class Agent2:
     """
-    The Aggregator Agent.
-    Responsible for merging extractions from multiple pages into unified tables.
+    The Aggregator Agent (Agent 2).
+    
+    This agent is responsible for consolidating extraction results from multiple pages.
+    It identifies tables that span across pages by matching their names (case-insensitive)
+    and merges their rows into a single unified table structure.
     """
 
     def __init__(self, fs_manager):
+        """
+        Initialize the Aggregator Agent.
+
+        Args:
+            fs_manager (FileSystemManager): Instance for handling file operations.
+        """
         self.fs_manager = fs_manager
 
     def run(self, pipeline_name: str, run_id: str):
+        """
+        Executes the aggregation phase.
+
+        1. Loads intermediate results from all processed pages.
+        2. Groups tables by their normalized name (lowercase, stripped).
+        3. Merges rows for tables with the same name.
+        4. Saves the consolidated list of tables to the 'aggregated' directory.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+        """
         logger.info(f"Agent 2: Starting aggregation for '{pipeline_name}' run '{run_id}'")
 
         # Load all intermediate results

@@ -13,25 +13,56 @@ logger = logging.getLogger(__name__)
 class FileSystemManager:
     """
     Manages the file system structure for the pipeline.
+    
+    This class handles the creation, organization, and access of files and directories
+    generated during the data extraction pipeline. It ensures a consistent structure
+    for each pipeline run.
 
     Structure:
     /pipelines/
       /{pipeline_name}/
-        metadata.json
-        /input/
-        /intermediate/
-        /aggregated/
-        /output/
+        /{run_id}/
+            metadata.json       # Stores run status, timestamps, and config
+            /input/             # Raw input files (e.g., PDFs)
+            /intermediate/      # Per-page extraction results (JSON)
+            /aggregated/        # Combined results before final export
+            /output/            # Final exported files (CSV, etc.)
     """
 
     def __init__(self, base_path: str = "pipelines"):
+        """
+        Initialize the FileSystemManager.
+
+        Args:
+            base_path (str): The root directory where all pipelines will be stored.
+                             Defaults to "pipelines".
+        """
         self.base_path = base_path
 
     def _get_pipeline_path(self, pipeline_name: str, run_id: str) -> str:
+        """
+        Constructs the absolute path for a specific pipeline run.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            str: The full path to the run directory.
+        """
         return os.path.join(self.base_path, pipeline_name, run_id)
 
     def initialize_pipeline(self, pipeline_name: str, run_id: str):
-        """Creates the directory structure for a new pipeline run."""
+        """
+        Creates the directory structure for a new pipeline run.
+        
+        This method creates the necessary subdirectories (input, intermediate,
+        aggregated, output) and initializes the metadata file.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+        """
         path = self._get_pipeline_path(pipeline_name, run_id)
 
         # Create directories
@@ -53,11 +84,29 @@ class FileSystemManager:
         logger.info(f"Pipeline '{pipeline_name}' run '{run_id}' initialized at {path}")
 
     def save_metadata(self, pipeline_name: str, run_id: str, metadata: Dict[str, Any]):
+        """
+        Saves metadata to the metadata.json file.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+            metadata (Dict[str, Any]): The metadata dictionary to save.
+        """
         path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "metadata.json")
         with open(path, "w") as f:
             json.dump(metadata, f, indent=2)
 
     def load_metadata(self, pipeline_name: str, run_id: str) -> Dict[str, Any]:
+        """
+        Loads metadata from the metadata.json file.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            Dict[str, Any]: The loaded metadata, or an empty dict if file not found.
+        """
         path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "metadata.json")
         if not os.path.exists(path):
             return {}
@@ -65,12 +114,33 @@ class FileSystemManager:
             return json.load(f)
 
     def save_input_file(self, pipeline_name: str, run_id: str, file_path: str, filename: str) -> str:
+        """
+        Copies the input file to the pipeline's input directory.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+            file_path (str): The source path of the input file.
+            filename (str): The destination filename.
+
+        Returns:
+            str: The path to the saved input file within the pipeline structure.
+        """
         filename = os.path.basename(filename)
         dest_path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "input", filename)
         shutil.copy(file_path, dest_path)
         return dest_path
 
     def save_intermediate_result(self, pipeline_name: str, run_id: str, page_num: int, data: Any):
+        """
+        Saves extraction results for a specific page.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+            page_num (int): The page number associated with the data.
+            data (Any): The extraction result data (usually a dictionary).
+        """
         path = os.path.join(
             self._get_pipeline_path(pipeline_name, run_id),
             "intermediate",
@@ -80,6 +150,16 @@ class FileSystemManager:
             json.dump(data, f, indent=2)
 
     def load_intermediate_results(self, pipeline_name: str, run_id: str) -> List[Any]:
+        """
+        Loads all intermediate page results for a pipeline run.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            List[Any]: A list of data from all page files, sorted by page number.
+        """
         intermediate_path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "intermediate")
         results = []
         if not os.path.exists(intermediate_path):
@@ -97,21 +177,48 @@ class FileSystemManager:
         return results
 
     def save_aggregated_result(self, pipeline_name: str, run_id: str, data: Any):
+        """
+        Saves the aggregated results to the 'aggregated' directory.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+            data (Any): The combined data from all pages.
+        """
         path = os.path.join(self._get_pipeline_path(pipeline_name, run_id), "aggregated", "tables.json")
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
 
     def get_output_path(self, pipeline_name: str, run_id: str) -> str:
+        """
+        Returns the path to the output directory.
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+
+        Returns:
+            str: The full path to the output directory.
+        """
         return os.path.join(self._get_pipeline_path(pipeline_name, run_id), "output")
 
 
 class Agent0:
     """
-    The Orchestrator Agent.
-    Manages the lifecycle of the data extraction pipeline.
+    The Orchestrator Agent (Agent 0).
+    
+    This agent acts as the main controller for the data extraction pipeline.
+    It manages the overall flow, state transitions, and coordination between
+    sub-agents (Scanner, Aggregator, Exporter).
     """
 
     def __init__(self, base_path: str = "pipelines"):
+        """
+        Initialize the Orchestrator with its sub-agents.
+        
+        Args:
+            base_path (str): The root directory for storing pipeline data.
+        """
         self.fs_manager = FileSystemManager(base_path)
         from opengin.tracer.agents.aggregator import Agent2
         from opengin.tracer.agents.exporter import Agent3
@@ -128,7 +235,21 @@ class Agent0:
         filename: str,
         run_id: str = None,
     ):
-        """Starts a new extraction pipeline."""
+        """
+        Initialize and setup a new extraction pipeline run.
+
+        This step prepares the filesystem, saves the input file, and sets the 
+        initial status of the run.
+
+        Args:
+            pipeline_name (str): A logical name for the pipeline (e.g., "invoices").
+            input_file_path (str): Path to the source file to process.
+            filename (str): The name to use for the saved file.
+            run_id (str, optional): A unique ID for the run. Auto-generated if None.
+
+        Returns:
+            tuple: (run_id, metadata)
+        """
         if not run_id:
             import uuid
 
@@ -152,7 +273,18 @@ class Agent0:
         return run_id, metadata
 
     def run_pipeline(self, pipeline_name: str, run_id: str, prompt: str = "Extract all tables."):
-        """Executes the full pipeline flow."""
+        """
+        Executes the full pipeline lifecycle sequentially.
+        
+        1. Scanning & Extraction (Agent 1)
+        2. Aggregation (Agent 2)
+        3. Export (Agent 3)
+
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            run_id (str): The unique identifier for the run.
+            prompt (str): The extraction instruction prompt for the LLM.
+        """
         logger.info(f"Agent 0: Running pipeline '{pipeline_name}' run '{run_id}'")
 
         try:
@@ -174,6 +306,11 @@ class Agent0:
             raise e
 
     def run_scaning_and_extraction(self, pipeline_name: str, run_id: str, prompt: str):
+        """
+        Phase 1: Trigger Document Scanning and Extraction.
+        
+        Delegates to Agent 1 (Scanner) to process the document page by page.
+        """
         logger.info(f"Agent 0: Triggering Scanning & Extraction for '{pipeline_name}' run '{run_id}'")
         metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
         metadata["current_stage"] = "SCANNING"
@@ -182,6 +319,11 @@ class Agent0:
         self.agent1.run(pipeline_name, run_id, prompt)
 
     def run_aggregation(self, pipeline_name: str, run_id: str):
+        """
+        Phase 2: Trigger Result Aggregation.
+        
+        Delegates to Agent 2 (Aggregator) to combine per-page results.
+        """
         logger.info(f"Agent 0: Triggering Aggregation for '{pipeline_name}' run '{run_id}'")
         metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
         metadata["current_stage"] = "AGGREGATING"
@@ -190,6 +332,11 @@ class Agent0:
         self.agent2.run(pipeline_name, run_id)
 
     def run_export(self, pipeline_name: str, run_id: str):
+        """
+        Phase 3: Trigger Final Export.
+        
+        Delegates to Agent 3 (Exporter) to format and save the final output.
+        """
         logger.info(f"Agent 0: Triggering Export for '{pipeline_name}' run '{run_id}'")
         metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
         metadata["current_stage"] = "EXPORTING"
