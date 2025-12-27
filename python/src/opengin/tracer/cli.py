@@ -213,6 +213,8 @@ def run(input_source, name, prompt):
     # 2. Handle Input Source (Local vs URL)
     is_url = input_source.startswith("http://") or input_source.startswith("https://")
     input_path = input_source
+    # Default filename for local files; overridden for URLs if possible
+    filename = os.path.basename(input_source)
     temp_file = None
 
     if is_url:
@@ -221,6 +223,23 @@ def run(input_source, name, prompt):
         try:
             response = requests.get(input_source, stream=True, timeout=60)
             response.raise_for_status()
+
+            # Try to extract filename from Content-Disposition
+            content_disposition = response.headers.get("content-disposition")
+            if content_disposition:
+                # Simple parsing for filename="name"
+                import re
+                fname = re.findall(r'filename="?([^"]+)"?', content_disposition)
+                if fname:
+                    filename = fname[0]
+            else:
+                # Fallback to URL path cleaning
+                path = urlparse(input_source).path
+                filename = os.path.basename(path)
+            
+            # Ensure filename isn't empty after fallback
+            if not filename or filename == ".":
+                 filename = "downloaded_doc.pdf"
 
             # Create temp file
             parsed_url = urlparse(input_source)
@@ -251,15 +270,7 @@ def run(input_source, name, prompt):
     # 4. Initialize and Run Agent0
     try:
         agent0 = Agent0()
-        filename = os.path.basename(input_source)
-        # Sanitise filename for URL
-        if is_url:
-            # Try to get filename from URL or header, fallback to simple name
-            if "?" in filename:
-                filename = filename.split("?")[0]
-            if not filename:
-                filename = "downloaded_doc.pdf"
-
+        
         click.echo(f"Initializing pipeline '{name}' for file '{filename}'...")
         run_id, metadata = agent0.create_pipeline(name, input_path, filename)
 

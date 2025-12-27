@@ -39,7 +39,7 @@ def generate_pdf(filename="data/quickstart_sample_multi.pdf"):
         ),
         (
             "Quarterly Financials (2024)",
-             [
+            [
                 ["Quarter", "Revenue", "Expenses", "Profit"],
                 ["Q1", "100k", "40k", "60k"],
                 ["Q2", "120k", "50k", "70k"],

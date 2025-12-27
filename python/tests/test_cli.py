@@ -132,10 +132,13 @@ def test_run_url(runner, mocker):
     mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
     
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
+    # Fix: Ensure Exception class is catchable
+    mock_requests.exceptions.RequestException = requests.exceptions.RequestException
 
     # Mock response
     mock_response = mocker.Mock()
     mock_response.iter_content.return_value = [b"chunk1", b"chunk2"]
+    mock_response.headers = {}
     mock_requests.get.return_value = mock_response
 
     url = "http://example.com/doc.pdf"
@@ -243,10 +246,14 @@ def test_run_url_with_query_params(runner, mocker):
     mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
     
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
+    # Fix: Ensure Exception class is catchable
+    mock_requests.exceptions.RequestException = requests.exceptions.RequestException
+
     mocker.patch("opengin.tracer.cli.validate_url", return_value=True)
 
     mock_response = mocker.Mock()
     mock_response.iter_content.return_value = [b"content"]
+    mock_response.headers = {}
     mock_requests.get.return_value = mock_response
 
     url = "http://example.com/doc.pdf?token=123"
@@ -262,3 +269,35 @@ def test_run_url_with_query_params(runner, mocker):
     input_path = args[1] # name, input_path, filename
     assert input_path.endswith(".pdf")
     assert "?" not in input_path
+
+
+def test_run_url_content_disposition(runner, mocker):
+    """Test 'run' command using Content-Disposition filename"""
+    mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_agent_instance = mock_agent_cls.return_value
+    mock_agent_instance.create_pipeline.return_value = ("run_123", {})
+    mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
+    
+    mock_requests = mocker.patch("opengin.tracer.cli.requests")
+    mock_requests.exceptions.RequestException = requests.exceptions.RequestException
+    mocker.patch("opengin.tracer.cli.validate_url", return_value=True)
+
+    mock_response = mocker.Mock()
+    mock_response.iter_content.return_value = [b"content"]
+    # Mock headers with Content-Disposition
+    mock_response.headers = {"content-disposition": 'attachment; filename="from_header.pdf"'}
+    mock_requests.get.return_value = mock_response
+
+    url = "http://example.com/download"
+
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["run", url])
+
+    assert result.exit_code == 0
+    assert "Initializing pipeline" in result.output
+    
+    # Check that create_pipeline was called with the filename from the header
+    args, _ = mock_agent_instance.create_pipeline.call_args
+    # args: name, input_path, filename
+    filename_arg = args[2]
+    assert filename_arg == "from_header.pdf"
