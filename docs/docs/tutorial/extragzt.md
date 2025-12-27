@@ -74,11 +74,7 @@ Once the pipeline completes, the script reads the aggregated results from the fi
 ```python
     # Retrieve Results
     fs_manager = agent0.fs_manager
-    aggregated_path = os.path.join(
-        fs_manager._get_pipeline_path(pipeline_name, run_id),
-        "aggregated",
-        "tables.json",
-    )
+    aggregated_path = fs_manager.get_aggregated_results_path(pipeline_name, run_id)
 
     with open(aggregated_path, "r") as f:
         tables = json.load(f)

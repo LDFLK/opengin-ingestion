@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import shutil
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -353,8 +354,6 @@ class Agent0:
             tuple: (run_id, metadata)
         """
         if not run_id:
-            import uuid
-
             run_id = str(uuid.uuid4())
 
         logger.info(f"Agent 0: Starting pipeline '{pipeline_name}' run '{run_id}'")
@@ -394,12 +393,7 @@ class Agent0:
             self.run_aggregation(pipeline_name, run_id)
             self.run_export(pipeline_name, run_id)
 
-            # Temporary success status update
-            metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
-            # TODO: Evaluate whether the complete status must be checked by the
-            #       orchestrator or if it should be done by the exporter.
-            metadata["status"] = "COMPLETED"
-            self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
+
 
         except Exception as e:
             logger.error(f"Agent 0: Pipeline failed - {e}")

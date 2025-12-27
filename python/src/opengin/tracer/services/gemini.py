@@ -113,35 +113,43 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
         }
         """
 
-    # 1. Upload File
-    myfile = upload_file_to_gemini(file_path)
+    myfile = None
+    try:
+        # 1. Upload File
+        myfile = upload_file_to_gemini(file_path)
 
-    # 2. Wait for processing
-    wait_for_files_active([myfile])
+        # 2. Wait for processing
+        wait_for_files_active([myfile])
 
-    # 3. Generate Content
-    # System/Structural Prompt to guide the output format
-    system_instruction = (
-        "You are a document extraction assistant. "
-        "Analyze the uploaded document and extract all tables found. "
-        "Please provide your response in a strictly valid JSON format. "
-        "The JSON should contain a key 'tables' which is a list of table objects. "
-        "Each table object must have: \n"
-        " - 'id': a unique string identifier for the table\n"
-        " - 'name': a descriptive name for the table (inferred from context or title)\n"
-        " - 'columns': a list of strings representing the column headers\n"
-        " - 'rows': a list of lists of strings, representing the data rows matching the columns order. \n"
-        "Do not include markdown code blocks (like ```json) in the response if possible, "
-        "or ensure it is valid JSON inside. "
-        f"\n\nUser Request: {user_prompt}"
-    )
+        # 3. Generate Content
+        # System/Structural Prompt to guide the output format
+        system_instruction = (
+            "You are a document extraction assistant. "
+            "Analyze the uploaded document and extract all tables found. "
+            "Please provide your response in a strictly valid JSON format. "
+            "The JSON should contain a key 'tables' which is a list of table objects. "
+            "Each table object must have: \n"
+            " - 'id': a unique string identifier for the table\n"
+            " - 'name': a descriptive name for the table (inferred from context or title)\n"
+            " - 'columns': a list of strings representing the column headers\n"
+            " - 'rows': a list of lists of strings, representing the data rows matching the columns order. \n"
+            "Do not include markdown code blocks (like ```json) in the response if possible, "
+            "or ensure it is valid JSON inside. "
+            f"\n\nUser Request: {user_prompt}"
+        )
 
-    # New SDK generation
-    # client.models.generate_content(model=..., contents=[...])
-    response = client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
+        # New SDK generation
+        # client.models.generate_content(model=..., contents=[...])
+        response = client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
 
-    # 4. Cleanup
-    # TODO: Evaluate the clean up logic
-    # client.files.delete(name=myfile.name)
-
-    return response.text
+        return response.text
+    finally:
+        # 4. Cleanup
+        if myfile:
+            try:
+                print(f"Deleting file {myfile.name}...")
+                client.files.delete(name=myfile.name)
+                print(f"File {myfile.name} deleted.")
+            except Exception as e:
+                # Log the error but don't let cleanup failure crash the app
+                print(f"Warning: Failed to delete file {myfile.name} from Gemini: {e}")

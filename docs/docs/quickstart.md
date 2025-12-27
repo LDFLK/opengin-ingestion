@@ -57,7 +57,7 @@ EXTRACTION_PROMPT = """
     **Instructions:**
     1. **Identify**: Locate the table and its title/heading.
     2. **Naming**: Use the table title as the table name. Convert it to snake_case (lowercase with underscores, e.g., "my_table_name").
-    3. **extract**: Extract all rows and columns accurately.
+    3. **Extract**: Extract all rows and columns accurately.
     4. **Separate**: If multiple tables exist, extract them as separate entities, each with its own name.
 """
 
