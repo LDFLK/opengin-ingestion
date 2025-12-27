@@ -23,13 +23,16 @@ const config = {
   url: 'https://LDFLK.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/opengin-ingestion/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'LDFLK', // Usually your GitHub org/user name.
   projectName: 'opengin-ingestion', // Usually your repo name.
 
+  deploymentBranch: 'gh-pages', // The branch required for GitHub pages
+  trailingSlash: false, // Recommended for GitHub Pages
+  
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
