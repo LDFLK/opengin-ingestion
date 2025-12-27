@@ -92,3 +92,80 @@ def test_delete_run(runner, test_pipeline_data, temp_pipeline_dir):
 
     fs_manager = FileSystemManager(base_path=temp_pipeline_dir)
     assert not os.path.exists(fs_manager.get_pipeline_path(pipeline_name, run_id))
+
+
+def test_run_local_file(runner, mocker, temp_pipeline_dir):
+    """Test 'run' command with a local file"""
+    # Mock Agent0
+    mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_agent_instance = mock_agent_cls.return_value
+    mock_agent_instance.create_pipeline.return_value = ("run_123", {})
+    mock_agent_instance.run_pipeline.return_value = None
+
+    # Mock output path existence check to avoid "Output files:"
+    # section erroring or verify it prints nothing if not exists
+    # We can just let it run.
+
+    with runner.isolated_filesystem():
+        with open("doc.pdf", "wb") as f:
+            f.write(b"dummy content")
+
+        result = runner.invoke(cli, ["run", "doc.pdf", "--name", "test_run", "--prompt", "test prompt"])
+
+    assert result.exit_code == 0
+    assert "Initializing pipeline 'test_run'" in result.output
+    assert "Pipeline completed successfully!" in result.output
+
+    mock_agent_instance.create_pipeline.assert_called_once()
+    mock_agent_instance.run_pipeline.assert_called_once()
+    args, _ = mock_agent_instance.run_pipeline.call_args
+    assert args[2] == "test prompt"
+
+
+def test_run_url(runner, mocker):
+    """Test 'run' command with a URL"""
+    mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_requests = mocker.patch("opengin.tracer.cli.requests")
+
+    # Mock response
+    mock_response = mocker.Mock()
+    mock_response.iter_content.return_value = [b"chunk1", b"chunk2"]
+    mock_requests.get.return_value = mock_response
+
+    url = "http://example.com/doc.pdf"
+
+    with runner.isolated_filesystem():
+        # verify download happened
+        result = runner.invoke(cli, ["run", url])
+
+    assert result.exit_code == 0
+    assert f"Downloading PDF from: {url}" in result.output
+    assert "Downloaded to temporary file" in result.output
+
+    mock_requests.get.assert_called_once_with(url, stream=True)
+    mock_agent_cls.return_value.create_pipeline.assert_called_once()
+
+
+def test_run_prompt_file(runner, mocker):
+    """Test 'run' command reading prompt from a file"""
+    mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_agent_instance = mock_agent_cls.return_value
+    mock_agent_instance.create_pipeline.return_value = ("run_123", {})
+
+    prompt_content = "This is a complex prompt from file."
+
+    with runner.isolated_filesystem():
+        with open("doc.pdf", "wb") as f:
+            f.write(b"dummy")
+        with open("prompt.txt", "w") as f:
+            f.write(prompt_content)
+
+        result = runner.invoke(cli, ["run", "doc.pdf", "--prompt", "prompt.txt"])
+
+    assert result.exit_code == 0
+    assert "Loading prompt from file: prompt.txt" in result.output
+
+    # Verify the content was passed, not the filename
+    mock_agent_instance.run_pipeline.assert_called_once()
+    args, _ = mock_agent_instance.run_pipeline.call_args
+    assert args[2] == prompt_content

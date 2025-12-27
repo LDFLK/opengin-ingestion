@@ -39,7 +39,7 @@ EXTRACTION_PROMPT = """
        - If Column I has item "12" and Column II has no corresponding item, leave Column II **empty** for that row.
        - Do **not** compress the table; preserve the alignment based on the numbering.
        - Please extract the numbering given for each record as it is. Don't miss the numbers.
-       - Ensure values per each column for each row are in order of the numbers associated with each record. 
+       - Ensure values per each column for each row are in order of the numbers associated with each record.
     3. **Consolidate Data:** Ensure that all records belonging to the same minister are aggregated together.
     4. **Output Constraint:** Generate a separate, single output structure for each minister found. The goal is to
        produce specific CSV files for each minister containing ONLY their data.

@@ -1,9 +1,6 @@
 import json
 import os
-
-import shutil
 import tempfile
-import time
 from datetime import datetime
 
 import click
@@ -194,19 +191,19 @@ def run(input_source, name, prompt):
             suffix = os.path.splitext(input_source)[1]
             if not suffix:
                 suffix = ".pdf"
-            
+
             # We create a named temp file but close it so Agent0 can read/copy it safely
             temp_fd, temp_path = tempfile.mkstemp(suffix=suffix)
             os.close(temp_fd)
-            
+
             with open(temp_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
-            
+
             input_path = temp_path
-            temp_file = temp_path # Mark for cleanup
+            temp_file = temp_path  # Mark for cleanup
             click.echo(f"Downloaded to temporary file: {input_path}")
-        
+
         except Exception as e:
             click.echo(f"Error downloading file: {e}", err=True)
             return
@@ -222,23 +219,23 @@ def run(input_source, name, prompt):
         filename = os.path.basename(input_source)
         # Sanitise filename for URL
         if is_url:
-             # Try to get filename from URL or header, fallback to simple name
-             if "?" in filename:
-                 filename = filename.split("?")[0]
-             if not filename:
-                 filename = "downloaded_doc.pdf"
+            # Try to get filename from URL or header, fallback to simple name
+            if "?" in filename:
+                filename = filename.split("?")[0]
+            if not filename:
+                filename = "downloaded_doc.pdf"
 
         click.echo(f"Initializing pipeline '{name}' for file '{filename}'...")
         run_id, metadata = agent0.create_pipeline(name, input_path, filename)
-        
+
         click.echo(f"Run ID: {run_id}")
         click.echo("Starting extraction...")
-        
+
         agent0.run_pipeline(name, run_id, prompt_text)
-        
+
         # 5. Success Output
-        click.echo(f"\nPipeline completed successfully!")
-        
+        click.echo("\nPipeline completed successfully!")
+
         # Show output files
         fs_manager = agent0.fs_manager
         output_dir = fs_manager.get_output_path(name, run_id)
@@ -246,14 +243,15 @@ def run(input_source, name, prompt):
             click.echo("Output files:")
             for f in os.listdir(output_dir):
                 click.echo(f" - {os.path.join(output_dir, f)}")
-        
+
     except Exception as e:
         click.echo(f"\nPipeline failed: {e}", err=True)
-    
+
     finally:
         # Cleanup temp file if we downloaded one
         if temp_file and os.path.exists(temp_file):
             os.remove(temp_file)
+
 
 if __name__ == "__main__":
     cli()
