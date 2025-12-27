@@ -41,6 +41,19 @@ The `opengin` CLI provides a unified tool to manage your ingestion pipelines and
 
 Manage your extraction pipelines, view runs, and clean up data.
 
+-   **Run a Pipeline**
+    Start an extraction job for a file or URL.
+    ```bash
+    # Local file
+    opengin tracer run ./data/doc.pdf --prompt "Extract all tables"
+
+    # URL
+    opengin tracer run https://example.com/report.pdf
+    
+    # Using a prompt file
+    opengin tracer run ./data/doc.pdf --prompt ./prompts/finance.txt
+    ```
+
 -   **List All Runs**
     View all pipeline runs and their status.
     ```bash
