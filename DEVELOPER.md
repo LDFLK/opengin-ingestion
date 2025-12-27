@@ -104,7 +104,7 @@ make format-fix
 We use [Docusaurus](https://docusaurus.io/) for our documentation website, located in the `docs/` directory.
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/en/download/) (v18 or higher)
+- [Node.js](https://nodejs.org/en/download/) (v20 or higher)
 
 ### Setup
 Install the necessary dependencies:
