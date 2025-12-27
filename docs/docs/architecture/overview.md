@@ -10,7 +10,7 @@ OpenGIN Tracer is built on a **Multi-Agent System** architecture. This design se
 
 The pipeline follows a linear progression:
 
-<img src="/img/architecture_diagram.jpeg" alt="Architecture Diagram"/>
+![Architecture Diagram](/img/architecture_diagram.jpeg)
 
 ## The Agents
 
