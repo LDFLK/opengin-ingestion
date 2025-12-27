@@ -45,7 +45,7 @@ Manage your extraction pipelines, view runs, and clean up data.
     Start an extraction job for a file or URL.
     ```bash
     # Local file
-    opengin tracer run ./data/doc.pdf --prompt "Extract all tables"
+    opengin tracer run ./data/doc.pdf --prompt "Extract all tables."
 
     # URL
     opengin tracer run https://example.com/report.pdf

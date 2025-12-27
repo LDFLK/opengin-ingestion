@@ -1,13 +1,47 @@
+import ipaddress
 import json
 import os
+import socket
 import tempfile
 from datetime import datetime
+from urllib.parse import urlparse
 
 import click
 import requests
 from tabulate import tabulate
 
 from opengin.tracer.agents.orchestrator import Agent0, FileSystemManager
+
+
+def validate_url(url):
+    """
+    Validates that the URL does not point to a private, loopback, or reserved IP address.
+    Raises click.ClickException if the URL is invalid or unsafe.
+    """
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname:
+            raise click.ClickException("Invalid URL: No hostname found")
+
+        # Resolve hostname to IP
+        try:
+            ip_str = socket.gethostbyname(hostname)
+        except socket.gaierror:
+             raise click.ClickException(f"Could not resolve hostname: {hostname}")
+
+        ip = ipaddress.ip_address(ip_str)
+
+        if ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_multicast:
+             raise click.ClickException(f"URL resolves to a restricted IP address: {ip_str}")
+        
+        return True
+
+    except ValueError:
+        raise click.ClickException("Invalid URL or IP address format")
+    except Exception as e:
+         # unexpected error during validation
+         raise click.ClickException(f"URL validation failed: {e}")
 
 
 @click.group()
@@ -182,13 +216,15 @@ def run(input_source, name, prompt):
     temp_file = None
 
     if is_url:
+        validate_url(input_source)
         click.echo(f"Downloading PDF from: {input_source}")
         try:
-            response = requests.get(input_source, stream=True)
+            response = requests.get(input_source, stream=True, timeout=60)
             response.raise_for_status()
 
             # Create temp file
-            suffix = os.path.splitext(input_source)[1]
+            parsed_url = urlparse(input_source)
+            suffix = os.path.splitext(parsed_url.path)[1]
             if not suffix:
                 suffix = ".pdf"
 
@@ -204,9 +240,8 @@ def run(input_source, name, prompt):
             temp_file = temp_path  # Mark for cleanup
             click.echo(f"Downloaded to temporary file: {input_path}")
 
-        except Exception as e:
-            click.echo(f"Error downloading file: {e}", err=True)
-            return
+        except requests.exceptions.RequestException as e:
+            raise click.ClickException(f"Error downloading file: {e}")
 
     # 3. Setup Pipeline Name
     if not name:
@@ -245,7 +280,7 @@ def run(input_source, name, prompt):
                 click.echo(f" - {os.path.join(output_dir, f)}")
 
     except Exception as e:
-        click.echo(f"\nPipeline failed: {e}", err=True)
+        raise click.ClickException(f"Pipeline failed: {e}")
 
     finally:
         # Cleanup temp file if we downloaded one

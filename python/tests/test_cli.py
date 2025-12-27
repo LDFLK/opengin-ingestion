@@ -5,6 +5,7 @@ from click.testing import CliRunner
 
 from opengin.tracer.agents.orchestrator import FileSystemManager
 from opengin.tracer.cli import cli
+import requests
 
 
 @pytest.fixture
@@ -101,6 +102,7 @@ def test_run_local_file(runner, mocker, temp_pipeline_dir):
     mock_agent_instance = mock_agent_cls.return_value
     mock_agent_instance.create_pipeline.return_value = ("run_123", {})
     mock_agent_instance.run_pipeline.return_value = None
+    mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
 
     # Mock output path existence check to avoid "Output files:"
     # section erroring or verify it prints nothing if not exists
@@ -125,6 +127,10 @@ def test_run_local_file(runner, mocker, temp_pipeline_dir):
 def test_run_url(runner, mocker):
     """Test 'run' command with a URL"""
     mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_agent_instance = mock_agent_cls.return_value
+    mock_agent_instance.create_pipeline.return_value = ("run_123", {})
+    mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
+    
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
 
     # Mock response
@@ -142,7 +148,7 @@ def test_run_url(runner, mocker):
     assert f"Downloading PDF from: {url}" in result.output
     assert "Downloaded to temporary file" in result.output
 
-    mock_requests.get.assert_called_once_with(url, stream=True)
+    mock_requests.get.assert_called_once_with(url, stream=True, timeout=60)
     mock_agent_cls.return_value.create_pipeline.assert_called_once()
 
 
@@ -151,6 +157,7 @@ def test_run_prompt_file(runner, mocker):
     mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
     mock_agent_instance = mock_agent_cls.return_value
     mock_agent_instance.create_pipeline.return_value = ("run_123", {})
+    mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
 
     prompt_content = "This is a complex prompt from file."
 
@@ -169,3 +176,89 @@ def test_run_prompt_file(runner, mocker):
     mock_agent_instance.run_pipeline.assert_called_once()
     args, _ = mock_agent_instance.run_pipeline.call_args
     assert args[2] == prompt_content
+
+
+def test_run_url_failure(runner, mocker):
+    """Test 'run' command with a failed URL download"""
+    mock_requests = mocker.patch("opengin.tracer.cli.requests")
+    mock_requests.exceptions.RequestException = requests.exceptions.RequestException
+    
+    # Mock raise_for_status to raise an exception
+    mock_response = mocker.Mock()
+    mock_response.raise_for_status.side_effect = requests.exceptions.RequestException("404 Not Found")
+    mock_requests.get.return_value = mock_response
+    
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["run", "http://example.com/missing.pdf"])
+        
+    assert result.exit_code != 0
+    assert "Error downloading file" in result.output
+
+
+def test_run_pipeline_failure(runner, mocker):
+    """Test 'run' command with a pipeline execution failure"""
+    mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_agent_instance = mock_agent_cls.return_value
+    mock_agent_instance.create_pipeline.return_value = ("run_fail", {})
+    # Simulate a pipeline failure
+    mock_agent_instance.run_pipeline.side_effect = Exception("Agent error")
+    
+    with runner.isolated_filesystem():
+        with open("doc.pdf", "wb") as f:
+            f.write(b"dummy")
+        result = runner.invoke(cli, ["run", "doc.pdf"])
+        
+    assert result.exit_code != 0
+    assert "Pipeline failed: Agent error" in result.output
+
+
+def test_run_ssrf_protection_private_ip(runner):
+    """Test that private IPs are blocked"""
+    result = runner.invoke(cli, ["run", "http://192.168.1.1/doc.pdf"])
+    assert result.exit_code != 0
+    assert "URL resolves to a restricted IP address" in result.output
+
+
+def test_run_ssrf_protection_loopback(runner):
+    """Test that loopback IPs are blocked"""
+    result = runner.invoke(cli, ["run", "http://127.0.0.1/doc.pdf"])
+    assert result.exit_code != 0
+    assert "URL resolves to a restricted IP address" in result.output
+
+
+def test_run_ssrf_protection_localhost(runner):
+    """Test that localhost is blocked"""
+    result = runner.invoke(cli, ["run", "http://localhost/doc.pdf"])
+    assert result.exit_code != 0
+    # The message might be "restricted IP" if it resolves to 127.0.0.1
+    # or "Could not resolve" if DNS fails in some envs, but usually it resolves to loopback.
+    assert "URL resolves to a restricted IP address" in result.output
+
+
+def test_run_url_with_query_params(runner, mocker):
+    """Test 'run' command with a URL containing query parameters"""
+    mock_agent_cls = mocker.patch("opengin.tracer.cli.Agent0")
+    mock_agent_instance = mock_agent_cls.return_value
+    mock_agent_instance.create_pipeline.return_value = ("run_123", {})
+    mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
+    
+    mock_requests = mocker.patch("opengin.tracer.cli.requests")
+    mocker.patch("opengin.tracer.cli.validate_url", return_value=True)
+
+    mock_response = mocker.Mock()
+    mock_response.iter_content.return_value = [b"content"]
+    mock_requests.get.return_value = mock_response
+
+    url = "http://example.com/doc.pdf?token=123"
+
+    with runner.isolated_filesystem():
+        result = runner.invoke(cli, ["run", url])
+
+    assert result.exit_code == 0
+    # Expected behavior: temp file should end with .pdf, not .pdf?token=123
+    assert "Downloaded to temporary file" in result.output
+    
+    args, _ = mock_agent_instance.create_pipeline.call_args
+    input_path = args[1] # name, input_path, filename
+    assert input_path.endswith(".pdf")
+    assert "?" not in input_path
