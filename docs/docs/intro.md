@@ -20,6 +20,7 @@ OpenGIN Tracer automates the tedious task of manually copying data from PDF tabl
 ## Key Features
 
 - **GenAI-Powered Extraction**: Uses state-of-the-art LLMs to understand complex table structures.
+- **Metadata Extraction**: Define custom schemas to extract table-level metadata (e.g., categories, confidence scores).
 - **Multi-Agent Architecture**: Modular design for better scalability and maintenance.
 - **Automated Workflow**: End-to-end automation from PDF input to structured output.
 - **Extensible**: easy to add new agents or extraction logic.
