@@ -48,11 +48,9 @@ class Agent2:
             for table in tables:
                 orig_name = table.get("name", "Untitled")
                 columns = table.get("columns", [])
-                columns = table.get("columns", [])
                 rows = table.get("rows", [])
                 metadata = table.get("metadata", None)
 
-                # Normalize Name
                 # Normalize Name
                 norm_name = orig_name.strip().lower()
 

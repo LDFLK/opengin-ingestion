@@ -50,6 +50,6 @@ The Exporter formats the data for consumption.
 - **Input**: The `aggregated/tables.json` file.
 - **Process**:
     - Transforms the hierarchical JSON structure into a flat format suitable for analysis or database insertion.
-    - Use `csv` module to generate CSV files for each table.
+    - Uses `csv` module to generate CSV files for each table.
     - Exports associated metadata as JSON files if present.
 - **Output**: Final files in the `output/` directory (e.g., `table_name.csv`, `table_name_metadata.json`).

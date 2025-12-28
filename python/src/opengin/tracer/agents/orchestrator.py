@@ -386,7 +386,6 @@ class Agent0:
         Args:
             pipeline_name (str): The name of the pipeline.
             run_id (str): The unique identifier for the run.
-            run_id (str): The unique identifier for the run.
             prompt (str): The extraction instruction prompt for the LLM.
             metadata_schema (dict, optional): The metadata schema to use for extraction.
         """

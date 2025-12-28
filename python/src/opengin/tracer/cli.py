@@ -1,6 +1,7 @@
 import ipaddress
 import json
 import os
+import re
 import socket
 import tempfile
 from datetime import datetime
@@ -8,6 +9,7 @@ from urllib.parse import urlparse
 
 import click
 import requests
+import yaml
 from tabulate import tabulate
 
 from opengin.tracer.agents.orchestrator import Agent0, FileSystemManager
@@ -218,8 +220,6 @@ def run(input_source, name, prompt, metadata_schema):
             raise click.ClickException(f"Metadata schema file not found: {metadata_schema}")
 
         try:
-            import yaml
-
             with open(metadata_schema, "r") as f:
                 schema_content = yaml.safe_load(f)
 
@@ -250,8 +250,6 @@ def run(input_source, name, prompt, metadata_schema):
             content_disposition = response.headers.get("content-disposition")
             if content_disposition:
                 # Simple parsing for filename="name"
-                import re
-
                 fname = re.findall(r'filename="?([^"]+)"?', content_disposition)
                 if fname:
                     filename = fname[0]
@@ -298,8 +296,6 @@ def run(input_source, name, prompt, metadata_schema):
         run_id, metadata = agent0.create_pipeline(name, input_path, filename)
 
         click.echo(f"Run ID: {run_id}")
-        click.echo("Starting extraction...")
-
         click.echo("Starting extraction...")
 
         agent0.run_pipeline(name, run_id, prompt_text, metadata_schema=schema_content)

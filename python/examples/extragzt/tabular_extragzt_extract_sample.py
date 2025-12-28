@@ -46,8 +46,8 @@ EXTRACTION_PROMPT = """
         - The metadata schema is provided in the `metadata_schema_path` argument.
         - The metadata schema is a YAML file containing a list of fields with their names, types, and descriptions.
         - The metadata schema is used to validate the extracted data.
-        - Do not hallucinate fields, leave them empty if it is not clear in the source.
-        - All metadata fields must be there with or without values.
+        - Do not hallucinate field values; leave them empty if they are not found in the source.
+        - All metadata fields must be present, even if their values are empty.
         - Empty values must be left as "" (empty string).
     4. **Consolidate Data:** Ensure that all records belonging to the same minister are aggregated together.
     5. **Output Constraint:** Generate a separate, single output structure for each minister found. The goal is to
