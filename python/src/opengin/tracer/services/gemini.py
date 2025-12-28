@@ -1,6 +1,5 @@
 import json
 import os
-
 import time
 
 from dotenv import load_dotenv
@@ -34,12 +33,17 @@ def upload_file_to_gemini(file_path: str, mime_type: str = None):
         The uploaded file object from the GenAI library.
     """
     print(f"Uploading file: {file_path}...")
-    # New SDK: client.files.upload(file=...)
-    # Note: 'path' argument might be used or 'file'. based on docs usually 'file' or 'path'.
-    # Let's try 'file' as generic, or check quickly?
-    # Actually, standard python client uses 'file' for path often or 'path'.
-    # Safe bet: use positional if unsure, or try 'path'.
-    # Recent google-genai documentation suggests 'file' or 'path'.
+    global client
+    if not client:
+        key = os.getenv("GOOGLE_API_KEY")
+        if key:
+            client = genai.Client(api_key=key)
+
+    if not client:
+        # Mock upload if still no client? Or raise?
+        # For consistency with extract, we might just print error or let it fail if not mocked elsewhere.
+        # But usually extraction checks first.
+        raise Exception("Google API Key not found. Cannot upload file.")
 
     # Using 'file' as the argument name for the local path
     uploaded_file = client.files.upload(file=file_path)
@@ -96,7 +100,13 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
     Returns:
         str: The raw text response from the model (expected to be JSON).
     """
-    # If no API key is set, return a mock response for testing purposes
+    # If no API key is set, try to load it from environment (lazy loading)
+    global client
+    if not client:
+        key = os.getenv("GOOGLE_API_KEY")
+        if key:
+            client = genai.Client(api_key=key)
+
     if not client:
         print("Mocking Gemini response (No API Key found)")
         return """

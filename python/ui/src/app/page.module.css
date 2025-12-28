@@ -1,0 +1,24 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 4rem 2rem;
+  min-height: 100vh;
+  background-color: var(--secondary-bg);
+}
+
+.title {
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 900px;
+}
