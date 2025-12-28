@@ -52,6 +52,9 @@ Manage your extraction pipelines, view runs, and clean up data.
     
     # Using a prompt file
     opengin tracer run ./data/doc.pdf --prompt ./prompts/finance.txt
+
+    # With Metadata Schema
+    opengin tracer run ./data/doc.pdf --metadata-schema ./schemas/metadata.yml
     ```
 
 -   **List All Runs**
@@ -95,8 +98,40 @@ Check the `examples/` directory for ready-to-run scripts.
 **Tabular Data Extraction:**
 [examples/extragzt/README.md](examples/extragzt/README.md)
 
-```bash
 python examples/extragzt/tabular_extragzt_extract_sample.py path/to/document.pdf
+```
+
+**Metadata Extraction:**
+You can enforce specific metadata extraction by providing a schema YAML file.
+
+### Metadata Schema Specification
+
+The metadata schema is a YAML file used to define the fields that should be extracted for each table.
+
+**Structure:**
+The root of the YAML file must contain a `fields` list. Each item in the list represents a metadata field to be extracted.
+
+```yaml
+fields:
+  - name: <field_name>        # Required: The key for the metadata field
+    description: <text>       # Optional: Description to guide the extraction
+    type: <data_type>         # Optional: Expected type (string, integer, float, boolean)
+```
+
+**Example:**
+```yaml
+fields:
+  - name: author
+    description: The author of the document
+    type: string
+  - name: created_date
+    description: The creation date of the document
+    type: string
+```
+
+**Run Command:**
+```bash
+python examples/extragzt/tabular_extragzt_extract_sample.py doc.pdf --metadata-schema examples/extragzt/metadata.yml
 ```
 
 ## Running the API Server

@@ -76,7 +76,7 @@ def wait_for_files_active(files):
     print()
 
 
-def extract_data_with_gemini(file_path: str, user_prompt: str):
+def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: dict = None):
     """
     Uploads a file to Gemini and performs data extraction.
 
@@ -133,6 +133,20 @@ def extract_data_with_gemini(file_path: str, user_prompt: str):
             " - 'name': a descriptive name for the table (inferred from context or title)\n"
             " - 'columns': a list of strings representing the column headers\n"
             " - 'rows': a list of lists of strings, representing the data rows matching the columns order. \n"
+            " - 'metadata': (Optional) a dictionary containing extracted metadata fields if specific schema provided. \n"
+        )
+
+        if metadata_schema:
+            import json
+            schema_str = json.dumps(metadata_schema, indent=2)
+            system_instruction += (
+                f"\n\nPer Table Metadata Extraction:\n"
+                f"For each table identified, you must also extract metadata based on the following schema:\n"
+                f"{schema_str}\n"
+                "The extracted metadata should be placed in the 'metadata' key within each table object.\n"
+            )
+
+        system_instruction += (
             "Do not include markdown code blocks (like ```json) in the response if possible, "
             "or ensure it is valid JSON inside. "
             f"\n\nUser Request: {user_prompt}"

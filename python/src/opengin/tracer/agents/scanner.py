@@ -29,7 +29,7 @@ class Agent1:
         """
         self.fs_manager = fs_manager
 
-    def run(self, pipeline_name: str, run_id: str, prompt: str):
+    def run(self, pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict = None):
         """
         Executes the scanning and extraction phase.
 
@@ -39,6 +39,7 @@ class Agent1:
             pipeline_name (str): The name of the pipeline.
             run_id (str): The unique identifier for the run.
             prompt (str): The extraction prompt to send to the LLM.
+            metadata_schema (dict, optional): The metadata schema to use for extraction.
 
         Raises:
             FileNotFoundError: If the input file recorded in metadata does not exist.
@@ -67,7 +68,7 @@ class Agent1:
 
             try:
                 # Call Gemini
-                raw_response = extract_data_with_gemini(page_path, prompt)
+                raw_response = extract_data_with_gemini(page_path, prompt, metadata_schema)
 
                 # Parse to ensure valid structure
                 parsed_result = parse_extraction_response(raw_response)
@@ -80,6 +81,7 @@ class Agent1:
                             "name": t.name,
                             "columns": t.columns,
                             "rows": t.rows,
+                            "metadata": t.metadata,
                         }
                     )
 

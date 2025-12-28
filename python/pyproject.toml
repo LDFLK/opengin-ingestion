@@ -10,7 +10,8 @@ requires-python = ">=3.11"
 dependencies = [
     "click",
     "tabulate",
-    "requests"
+    "requests",
+    "PyYAML"
 ]
 
 [project.scripts]

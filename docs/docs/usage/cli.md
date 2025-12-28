@@ -30,6 +30,7 @@ opengin tracer run <INPUT_SOURCE> [OPTIONS]
 
 - `--name`: A human-readable name for this pipeline run (e.g., "financial_report_2024"). Defaults to `run_<timestamp>`.
 - `--prompt`: The extraction prompt text OR a path to a text file containing the prompt. Defaults to "Extract all tables.".
+- `--metadata-schema`: Path to a YAML file defining the metadata schema to extract for each table.
 
 ### Examples
 
@@ -48,6 +49,12 @@ opengin tracer run https://raw.githubusercontent.com/LDFLK/opengin-ingestion/mai
 For complex instructions, save your prompt in a text file.
 ```bash
 opengin tracer run ./data/invoice.pdf --prompt ./prompts/invoice_extraction.txt
+```
+
+**4. With Metadata extraction:**
+Extract keys defined in a YAML schema.
+```bash
+opengin tracer run ./data/doc.pdf --metadata-schema ./metadata.yml
 ```
 
 ## Output

@@ -193,7 +193,8 @@ def clear_all():
 @click.argument("input_source")
 @click.option("--name", default=None, help="Name of the pipeline run. Defaults to 'run_<timestamp>'.")
 @click.option("--prompt", default="Extract all tables.", help="Extraction prompt or path to a text file.")
-def run(input_source, name, prompt):
+@click.option("--metadata-schema", default=None, help="Path to a YAML file defining the metadata schema.")
+def run(input_source, name, prompt, metadata_schema):
     """
     Run an extraction pipeline.
 
@@ -209,6 +210,26 @@ def run(input_source, name, prompt):
             prompt_text = f.read()
     else:
         prompt_text = prompt
+
+    # 1.5 Handle Metadata Schema
+    schema_content = None
+    if metadata_schema:
+        if not os.path.exists(metadata_schema):
+             raise click.ClickException(f"Metadata schema file not found: {metadata_schema}")
+        
+        try:
+            import yaml
+            with open(metadata_schema, "r") as f:
+                schema_content = yaml.safe_load(f)
+            
+            # Simple Validation
+            if not isinstance(schema_content, dict) or "fields" not in schema_content:
+                 raise click.ClickException("Invalid schema format. Must typically contain a 'fields' list.")
+            
+        except ImportError:
+             raise click.ClickException("PyYAML is required for metadata schema support. Please install it.")
+        except Exception as e:
+             raise click.ClickException(f"Error parsing metadata schema: {e}")
 
     # 2. Handle Input Source (Local vs URL)
     is_url = input_source.startswith("http://") or input_source.startswith("https://")
@@ -277,7 +298,9 @@ def run(input_source, name, prompt):
         click.echo(f"Run ID: {run_id}")
         click.echo("Starting extraction...")
 
-        agent0.run_pipeline(name, run_id, prompt_text)
+        click.echo("Starting extraction...")
+
+        agent0.run_pipeline(name, run_id, prompt_text, metadata_schema=schema_content)
 
         # 5. Success Output
         click.echo("\nPipeline completed successfully!")

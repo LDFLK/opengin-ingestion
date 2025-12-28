@@ -48,7 +48,9 @@ class Agent2:
             for table in tables:
                 orig_name = table.get("name", "Untitled")
                 columns = table.get("columns", [])
+                columns = table.get("columns", [])
                 rows = table.get("rows", [])
+                metadata = table.get("metadata", None)
 
                 # Normalize Name
                 # Normalize Name
@@ -76,6 +78,7 @@ class Agent2:
                         "name": orig_name if counter == 1 else f"{orig_name} ({counter-1})",
                         "columns": columns,
                         "rows": [],
+                        "metadata": metadata,
                     }
 
                 # Append rows
@@ -85,7 +88,14 @@ class Agent2:
         # Construct final aggregated list
         aggregated_tables = []
         for norm_name, data in aggregated_map.items():
-            aggregated_tables.append({"name": data["name"], "columns": data["columns"], "rows": data["rows"]})
+            aggregated_tables.append(
+                {
+                    "name": data["name"],
+                    "columns": data["columns"],
+                    "rows": data["rows"],
+                    "metadata": data.get("metadata"),
+                }
+            )
 
         # Save aggregated result
         self.fs_manager.save_aggregated_result(pipeline_name, run_id, aggregated_tables)
