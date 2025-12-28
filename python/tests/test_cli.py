@@ -1,11 +1,11 @@
 import os
 
 import pytest
+import requests
 from click.testing import CliRunner
 
 from opengin.tracer.agents.orchestrator import FileSystemManager
 from opengin.tracer.cli import cli
-import requests
 
 
 @pytest.fixture
@@ -130,7 +130,7 @@ def test_run_url(runner, mocker):
     mock_agent_instance = mock_agent_cls.return_value
     mock_agent_instance.create_pipeline.return_value = ("run_123", {})
     mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
-    
+
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
     # Fix: Ensure Exception class is catchable
     mock_requests.exceptions.RequestException = requests.exceptions.RequestException
@@ -185,15 +185,15 @@ def test_run_url_failure(runner, mocker):
     """Test 'run' command with a failed URL download"""
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
     mock_requests.exceptions.RequestException = requests.exceptions.RequestException
-    
+
     # Mock raise_for_status to raise an exception
     mock_response = mocker.Mock()
     mock_response.raise_for_status.side_effect = requests.exceptions.RequestException("404 Not Found")
     mock_requests.get.return_value = mock_response
-    
+
     with runner.isolated_filesystem():
         result = runner.invoke(cli, ["run", "http://example.com/missing.pdf"])
-        
+
     assert result.exit_code != 0
     assert "Error downloading file" in result.output
 
@@ -205,12 +205,12 @@ def test_run_pipeline_failure(runner, mocker):
     mock_agent_instance.create_pipeline.return_value = ("run_fail", {})
     # Simulate a pipeline failure
     mock_agent_instance.run_pipeline.side_effect = Exception("Agent error")
-    
+
     with runner.isolated_filesystem():
         with open("doc.pdf", "wb") as f:
             f.write(b"dummy")
         result = runner.invoke(cli, ["run", "doc.pdf"])
-        
+
     assert result.exit_code != 0
     assert "Pipeline failed: Agent error" in result.output
 
@@ -244,7 +244,7 @@ def test_run_url_with_query_params(runner, mocker):
     mock_agent_instance = mock_agent_cls.return_value
     mock_agent_instance.create_pipeline.return_value = ("run_123", {})
     mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
-    
+
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
     # Fix: Ensure Exception class is catchable
     mock_requests.exceptions.RequestException = requests.exceptions.RequestException
@@ -264,9 +264,9 @@ def test_run_url_with_query_params(runner, mocker):
     assert result.exit_code == 0
     # Expected behavior: temp file should end with .pdf, not .pdf?token=123
     assert "Downloaded to temporary file" in result.output
-    
+
     args, _ = mock_agent_instance.create_pipeline.call_args
-    input_path = args[1] # name, input_path, filename
+    input_path = args[1]  # name, input_path, filename
     assert input_path.endswith(".pdf")
     assert "?" not in input_path
 
@@ -277,7 +277,7 @@ def test_run_url_content_disposition(runner, mocker):
     mock_agent_instance = mock_agent_cls.return_value
     mock_agent_instance.create_pipeline.return_value = ("run_123", {})
     mock_agent_instance.fs_manager.get_output_path.return_value = "output_dir"
-    
+
     mock_requests = mocker.patch("opengin.tracer.cli.requests")
     mock_requests.exceptions.RequestException = requests.exceptions.RequestException
     mocker.patch("opengin.tracer.cli.validate_url", return_value=True)
@@ -295,7 +295,7 @@ def test_run_url_content_disposition(runner, mocker):
 
     assert result.exit_code == 0
     assert "Initializing pipeline" in result.output
-    
+
     # Check that create_pipeline was called with the filename from the header
     args, _ = mock_agent_instance.create_pipeline.call_args
     # args: name, input_path, filename

@@ -28,20 +28,20 @@ def validate_url(url):
         try:
             ip_str = socket.gethostbyname(hostname)
         except socket.gaierror:
-             raise click.ClickException(f"Could not resolve hostname: {hostname}")
+            raise click.ClickException(f"Could not resolve hostname: {hostname}")
 
         ip = ipaddress.ip_address(ip_str)
 
         if ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_multicast:
-             raise click.ClickException(f"URL resolves to a restricted IP address: {ip_str}")
-        
+            raise click.ClickException(f"URL resolves to a restricted IP address: {ip_str}")
+
         return True
 
     except ValueError:
         raise click.ClickException("Invalid URL or IP address format")
     except Exception as e:
-         # unexpected error during validation
-         raise click.ClickException(f"URL validation failed: {e}")
+        # unexpected error during validation
+        raise click.ClickException(f"URL validation failed: {e}")
 
 
 @click.group()
@@ -215,21 +215,22 @@ def run(input_source, name, prompt, metadata_schema):
     schema_content = None
     if metadata_schema:
         if not os.path.exists(metadata_schema):
-             raise click.ClickException(f"Metadata schema file not found: {metadata_schema}")
-        
+            raise click.ClickException(f"Metadata schema file not found: {metadata_schema}")
+
         try:
             import yaml
+
             with open(metadata_schema, "r") as f:
                 schema_content = yaml.safe_load(f)
-            
+
             # Simple Validation
             if not isinstance(schema_content, dict) or "fields" not in schema_content:
-                 raise click.ClickException("Invalid schema format. Must typically contain a 'fields' list.")
-            
+                raise click.ClickException("Invalid schema format. Must typically contain a 'fields' list.")
+
         except ImportError:
-             raise click.ClickException("PyYAML is required for metadata schema support. Please install it.")
+            raise click.ClickException("PyYAML is required for metadata schema support. Please install it.")
         except Exception as e:
-             raise click.ClickException(f"Error parsing metadata schema: {e}")
+            raise click.ClickException(f"Error parsing metadata schema: {e}")
 
     # 2. Handle Input Source (Local vs URL)
     is_url = input_source.startswith("http://") or input_source.startswith("https://")
@@ -250,6 +251,7 @@ def run(input_source, name, prompt, metadata_schema):
             if content_disposition:
                 # Simple parsing for filename="name"
                 import re
+
                 fname = re.findall(r'filename="?([^"]+)"?', content_disposition)
                 if fname:
                     filename = fname[0]
@@ -257,10 +259,10 @@ def run(input_source, name, prompt, metadata_schema):
                 # Fallback to URL path cleaning
                 path = urlparse(input_source).path
                 filename = os.path.basename(path)
-            
+
             # Ensure filename isn't empty after fallback
             if not filename or filename == ".":
-                 filename = "downloaded_doc.pdf"
+                filename = "downloaded_doc.pdf"
 
             # Create temp file
             parsed_url = urlparse(input_source)
@@ -291,7 +293,7 @@ def run(input_source, name, prompt, metadata_schema):
     # 4. Initialize and Run Agent0
     try:
         agent0 = Agent0()
-        
+
         click.echo(f"Initializing pipeline '{name}' for file '{filename}'...")
         run_id, metadata = agent0.create_pipeline(name, input_path, filename)
 

@@ -30,7 +30,7 @@ def test_orchestrator_pipeline_flow(fs_manager, tmp_path):
 
         # Verify call order
         # Access the return value (instance) of the mocks
-        agent0.agent1.run.assert_called_once_with(pipeline_name, run_id, "Extract all tables.")
+        agent0.agent1.run.assert_called_once_with(pipeline_name, run_id, "Extract all tables.", None)
         agent0.agent2.run.assert_called_once_with(pipeline_name, run_id)
         agent0.agent3.run.assert_called_once_with(pipeline_name, run_id)
 

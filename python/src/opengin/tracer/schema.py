@@ -5,8 +5,8 @@ import tempfile
 import typing
 
 import strawberry
-from strawberry.scalars import JSON
 from strawberry.file_uploads import Upload
+from strawberry.scalars import JSON
 
 
 @strawberry.type

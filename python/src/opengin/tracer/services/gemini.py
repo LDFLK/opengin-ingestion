@@ -133,11 +133,13 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
             " - 'name': a descriptive name for the table (inferred from context or title)\n"
             " - 'columns': a list of strings representing the column headers\n"
             " - 'rows': a list of lists of strings, representing the data rows matching the columns order. \n"
-            " - 'metadata': (Optional) a dictionary containing extracted metadata fields if specific schema provided. \n"
+            " - 'metadata': (Optional) a dictionary containing extracted metadata fields if specific \n"
+            "    schema provided. \n"
         )
 
         if metadata_schema:
             import json
+
             schema_str = json.dumps(metadata_schema, indent=2)
             system_instruction += (
                 f"\n\nPer Table Metadata Extraction:\n"

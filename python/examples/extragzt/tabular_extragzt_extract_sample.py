@@ -14,6 +14,7 @@ import json
 import logging
 import os
 import sys
+
 import yaml
 
 from opengin.tracer.agents.orchestrator import Agent0
@@ -45,8 +46,8 @@ EXTRACTION_PROMPT = """
         - The metadata schema is provided in the `metadata_schema_path` argument.
         - The metadata schema is a YAML file containing a list of fields with their names, types, and descriptions.
         - The metadata schema is used to validate the extracted data.
-        - Do not hallucinate fields, leave them empty if it is not clear in the source. 
-        - All metadata fields must be there with or without values. 
+        - Do not hallucinate fields, leave them empty if it is not clear in the source.
+        - All metadata fields must be there with or without values.
         - Empty values must be left as "" (empty string).
     4. **Consolidate Data:** Ensure that all records belonging to the same minister are aggregated together.
     5. **Output Constraint:** Generate a separate, single output structure for each minister found. The goal is to
@@ -104,12 +105,12 @@ def perform_extraction(file_path: str, metadata_schema_path: str = None) -> None
                 print(f"Name:     {table.get('name')}")
                 print(f"Columns:  {table.get('columns')}")
                 print(f"Rows:     {len(table.get('rows', []))} found")
-                
-                metadata = table.get('metadata')
+
+                metadata = table.get("metadata")
                 if metadata:
                     print("Metadata:")
                     print(json.dumps(metadata, indent=4))
-                    
+
                 print("-" * 40)
         else:
             logger.warning("Pipeline completed but no aggregated results found.")

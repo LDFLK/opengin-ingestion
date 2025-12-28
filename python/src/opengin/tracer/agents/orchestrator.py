@@ -373,7 +373,9 @@ class Agent0:
         logger.info(f"Agent 0: Pipeline '{pipeline_name}' run '{run_id}' ready. Input saved to {saved_path}")
         return run_id, metadata
 
-    def run_pipeline(self, pipeline_name: str, run_id: str, prompt: str = "Extract all tables.", metadata_schema: dict = None):
+    def run_pipeline(
+        self, pipeline_name: str, run_id: str, prompt: str = "Extract all tables.", metadata_schema: dict = None
+    ):
         """
         Executes the full pipeline lifecycle sequentially.
 

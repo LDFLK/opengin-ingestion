@@ -84,15 +84,15 @@ class Agent3:
                 f.write(output.getvalue())
 
             logger.info(f"Agent 3: Exported {filename}")
-            
+
             # Export metadata if present
             metadata_content = table.get("metadata")
             if metadata_content:
                 metadata_filename = f"{base_filename}_metadata.json"
                 # Handle potential collision logic if needed, but usually matches base_filename
                 if counter > 1:
-                     metadata_filename = f"{base_filename}_{counter-1}_metadata.json"
-                
+                    metadata_filename = f"{base_filename}_{counter-1}_metadata.json"
+
                 metadata_filepath = os.path.join(output_dir, metadata_filename)
                 with open(metadata_filepath, "w") as f:
                     json.dump(metadata_content, f, indent=4)
