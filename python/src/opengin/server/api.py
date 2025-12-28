@@ -160,18 +160,42 @@ async def get_results(job_id: str):
 @router.get("/file")
 async def get_file_content(path: str):
     """Serve file content."""
-    # Security check: Ensure path is within sandbox
-    if "sandbox" not in os.path.abspath(path):
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Define trusted roots (allow access strictly to sandboxed areas)
+    trusted_roots = [
+        os.path.abspath(UPLOAD_DIR),
+        base_pipeline_path
+    ]
 
-    if not os.path.exists(path):
+    try:
+        # Resolve the absolute path to handle symlinks and ../ components
+        formatted_path = os.path.abspath(path)
+        real_path = os.path.realpath(formatted_path)
+    except Exception:
+         raise HTTPException(status_code=400, detail="Invalid path format")
+
+    # Verify that the file is actually inside one of the trusted roots
+    is_allowed = False
+    for root in trusted_roots:
+        # Check if trusted root is a prefix of the real path
+        # os.path.commonpath throws if paths are on different drives on Windows, but fine here
+        try:
+             if os.path.commonpath([root, real_path]) == root:
+                 is_allowed = True
+                 break
+        except ValueError:
+             continue
+    
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Access denied: Security violation")
+    
+    if not os.path.exists(real_path):
         raise HTTPException(status_code=404, detail="File not found")
 
     # Determine media type suitable for browser viewing or text
     if path.endswith(".csv") or path.endswith(".txt") or path.endswith(".json") or path.endswith(".yml"):
-        return FileResponse(path, filename=os.path.basename(path))
-
-    return FileResponse(path, filename=os.path.basename(path))
+        return FileResponse(real_path, filename=os.path.basename(real_path))
+    
+    return FileResponse(real_path, filename=os.path.basename(real_path))
 
 
 @router.get("/download-all/{job_id}")
