@@ -227,8 +227,6 @@ def run(input_source, name, prompt, metadata_schema):
             if not isinstance(schema_content, dict) or "fields" not in schema_content:
                 raise click.ClickException("Invalid schema format. Must typically contain a 'fields' list.")
 
-        except ImportError:
-            raise click.ClickException("PyYAML is required for metadata schema support. Please install it.")
         except Exception as e:
             raise click.ClickException(f"Error parsing metadata schema: {e}")
 

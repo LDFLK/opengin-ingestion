@@ -1,4 +1,6 @@
+import json
 import os
+
 import time
 
 from dotenv import load_dotenv
@@ -138,8 +140,6 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
         )
 
         if metadata_schema:
-            import json
-
             schema_str = json.dumps(metadata_schema, indent=2)
             system_instruction += (
                 f"\n\nPer Table Metadata Extraction:\n"
