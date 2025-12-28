@@ -43,10 +43,10 @@ async def upload_pdf(file: UploadFile = File(...)):
     return {"file_id": file_id, "filename": file.filename}
 
 
-def run_extraction_task(pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict):
+def run_extraction_task(pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict, api_key: str = None):
     """Background task to run the extraction pipeline."""
     try:
-        agent0.run_pipeline(pipeline_name, run_id, prompt, metadata_schema)
+        agent0.run_pipeline(pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
     except Exception as e:
         print(f"Extraction failed for {run_id}: {e}")
 
@@ -73,9 +73,9 @@ async def extract_document(
         raise HTTPException(status_code=400, detail=f"Invalid Metadata YAML: {e}")
 
     # Set Google API Key if provided
-    # Note: Ideally this should be handled safely. For now we set env var for the process.
-    if api_key:
-        os.environ["GOOGLE_API_KEY"] = api_key
+    # Passed explicitly to the extraction task to avoid global state issues
+    # if api_key:
+    #     os.environ["GOOGLE_API_KEY"] = api_key
 
     pipeline_name = "ui_extraction"
 
@@ -92,7 +92,8 @@ async def extract_document(
         raise HTTPException(status_code=500, detail=f"Failed to create pipeline: {e}")
 
     # Run in background
-    background_tasks.add_task(run_extraction_task, pipeline_name, run_id, prompt, metadata_schema)
+    # Run in background
+    background_tasks.add_task(run_extraction_task, pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
 
     return {"job_id": run_id, "status": "pending", "pipeline_name": pipeline_name}
 

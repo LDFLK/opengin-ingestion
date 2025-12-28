@@ -29,7 +29,7 @@ class Agent1:
         """
         self.fs_manager = fs_manager
 
-    def run(self, pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict = None):
+    def run(self, pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict = None, api_key: str = None):
         """
         Executes the scanning and extraction phase.
 
@@ -40,6 +40,7 @@ class Agent1:
             run_id (str): The unique identifier for the run.
             prompt (str): The extraction prompt to send to the LLM.
             metadata_schema (dict, optional): The metadata schema to use for extraction.
+            api_key (str, optional): The Google API Key.
 
         Raises:
             FileNotFoundError: If the input file recorded in metadata does not exist.
@@ -68,7 +69,7 @@ class Agent1:
 
             try:
                 # Call Gemini
-                raw_response = extract_data_with_gemini(page_path, prompt, metadata_schema)
+                raw_response = extract_data_with_gemini(page_path, prompt, metadata_schema, api_key=api_key)
 
                 # Parse to ensure valid structure
                 parsed_result = parse_extraction_response(raw_response)

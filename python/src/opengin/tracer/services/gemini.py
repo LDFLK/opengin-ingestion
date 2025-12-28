@@ -21,37 +21,42 @@ else:
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 
-def upload_file_to_gemini(file_path: str, mime_type: str = None):
+def upload_file_to_gemini(file_path: str, api_key: str = None, mime_type: str = None):
     """
     Uploads a file to the Gemini Files API.
 
     Args:
         file_path (str): The local path to the file to upload.
+        api_key (str, optional): The Google API Key.
         mime_type (str, optional): The MIME type of the file. Defaults to None (auto-detect).
 
     Returns:
         The uploaded file object from the GenAI library.
     """
     print(f"Uploading file: {file_path}...")
-    global client
-    if not client:
-        key = os.getenv("GOOGLE_API_KEY")
-        if key:
-            client = genai.Client(api_key=key)
 
-    if not client:
-        # Mock upload if still no client? Or raise?
-        # For consistency with extract, we might just print error or let it fail if not mocked elsewhere.
-        # But usually extraction checks first.
+    local_client = None
+    if api_key:
+        local_client = genai.Client(api_key=api_key)
+    else:
+        # Fallback to global client or env var
+        global client
+        if not client:
+            key = os.getenv("GOOGLE_API_KEY")
+            if key:
+                client = genai.Client(api_key=key)
+        local_client = client
+
+    if not local_client:
         raise Exception("Google API Key not found. Cannot upload file.")
 
     # Using 'file' as the argument name for the local path
-    uploaded_file = client.files.upload(file=file_path)
+    uploaded_file = local_client.files.upload(file=file_path)
     print(f"File uploaded: {uploaded_file.display_name} as {uploaded_file.uri}")
     return uploaded_file
 
 
-def wait_for_files_active(files):
+def wait_for_files_active(files, client=None):
     """
     Waits for the given files to be active on the Gemini API.
 
@@ -61,11 +66,21 @@ def wait_for_files_active(files):
 
     Args:
         files (list): A list of uploaded file objects.
+        client (genai.Client, optional): The client instance to use.
 
     Raises:
         Exception: If a file fails to process.
     """
     print("Waiting for file processing...")
+    # Fallback to global if not provided
+    if not client:
+        client = globals().get("client")
+
+    if not client:
+        key = os.getenv("GOOGLE_API_KEY")
+        if key:
+            client = genai.Client(api_key=key)
+
     for f in files:
         # In new SDK, file object might have .name
         name = f.name
@@ -82,7 +97,7 @@ def wait_for_files_active(files):
     print()
 
 
-def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: dict = None):
+def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: dict = None, api_key: str = None):
     """
     Uploads a file to Gemini and performs data extraction.
 
@@ -96,18 +111,25 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
     Args:
         file_path (str): Path to the single-page PDF or image.
         user_prompt (str): Specific instructions on what to extract.
+        metadata_schema (dict, optional): Schema for metadata extraction.
+        api_key (str, optional): The Google API Key.
 
     Returns:
         str: The raw text response from the model (expected to be JSON).
     """
-    # If no API key is set, try to load it from environment (lazy loading)
-    global client
-    if not client:
-        key = os.getenv("GOOGLE_API_KEY")
-        if key:
-            client = genai.Client(api_key=key)
+    local_client = None
+    if api_key:
+        local_client = genai.Client(api_key=api_key)
+    else:
+        # Fallback to global client or env var
+        global client
+        if not client:
+            key = os.getenv("GOOGLE_API_KEY")
+            if key:
+                client = genai.Client(api_key=key)
+        local_client = client
 
-    if not client:
+    if not local_client:
         print("Mocking Gemini response (No API Key found)")
         return """
         {
@@ -128,10 +150,15 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
     myfile = None
     try:
         # 1. Upload File
-        myfile = upload_file_to_gemini(file_path)
+        myfile = upload_file_to_gemini(file_path, api_key=api_key)
 
-        # 2. Wait for processing
-        wait_for_files_active([myfile])
+        # 2. Wait for processing (needs client too, update wait function or use local_client directly?)
+        # wait_for_files_active uses global client. We should update it too.
+        # For now, let's update wait_for_files_active to take client or assume the global one is what it used before.
+        # Actually, wait_for_files_active relies on 'client'. We should fix that too.
+        # But wait, we can pass the client to wait_for_files_active.
+
+        wait_for_files_active([myfile], client=local_client)
 
         # 3. Generate Content
         # System/Structural Prompt to guide the output format
@@ -166,7 +193,7 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
 
         # New SDK generation
         # client.models.generate_content(model=..., contents=[...])
-        response = client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
+        response = local_client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
 
         return response.text
     finally:
@@ -174,7 +201,7 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
         if myfile:
             try:
                 print(f"Deleting file {myfile.name}...")
-                client.files.delete(name=myfile.name)
+                local_client.files.delete(name=myfile.name)
                 print(f"File {myfile.name} deleted.")
             except Exception as e:
                 # Log the error but don't let cleanup failure crash the app

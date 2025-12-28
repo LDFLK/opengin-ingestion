@@ -374,7 +374,12 @@ class Agent0:
         return run_id, metadata
 
     def run_pipeline(
-        self, pipeline_name: str, run_id: str, prompt: str = "Extract all tables.", metadata_schema: dict = None
+        self,
+        pipeline_name: str,
+        run_id: str,
+        prompt: str = "Extract all tables.",
+        metadata_schema: dict = None,
+        api_key: str = None,
     ):
         """
         Executes the full pipeline lifecycle sequentially.
@@ -392,7 +397,7 @@ class Agent0:
         logger.info(f"Agent 0: Running pipeline '{pipeline_name}' run '{run_id}'")
 
         try:
-            self.run_scaning_and_extraction(pipeline_name, run_id, prompt, metadata_schema)
+            self.run_scaning_and_extraction(pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
             self.run_aggregation(pipeline_name, run_id)
             self.run_export(pipeline_name, run_id)
 
@@ -404,7 +409,9 @@ class Agent0:
             self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
             raise e
 
-    def run_scaning_and_extraction(self, pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict = None):
+    def run_scaning_and_extraction(
+        self, pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict = None, api_key: str = None
+    ):
         """
         Phase 1: Trigger Document Scanning and Extraction.
 
@@ -415,7 +422,7 @@ class Agent0:
         metadata["current_stage"] = "SCANNING"
         self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
-        self.agent1.run(pipeline_name, run_id, prompt, metadata_schema)
+        self.agent1.run(pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
 
     def run_aggregation(self, pipeline_name: str, run_id: str):
         """

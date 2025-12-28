@@ -32,3 +32,6 @@ MANIFEST
 venv/
 ENV/
 env/
+
+## Sandbox
+sandbox/**
