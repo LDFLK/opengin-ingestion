@@ -147,3 +147,56 @@ def test_download_all_success(mock_agent0, tmp_path):
     
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/zip"
+
+
+def test_quick_setup_success(mock_upload_dir, tmp_path):
+    # Mock the sample file existence
+    # We need to mock os.path.exists to return True for one of the search paths
+    # AND mock shutil.copy to succeed.
+    
+    # We can create a dummy file at one of the expected locations.
+    # The API looks at os.getcwd()/../data/quickstart_sample.pdf
+    # When running tests, os.getcwd() is python root. ../data is opengin-ingestion/data.
+    
+    # Let's mock the search paths or just ensure the file exists in the test env.
+    
+    # Using patch for os.path.exists specifically for the sample file check is tricky if we want other checks to work.
+    # Instead, let's patch the search logic or creating a temp file and patch os.getcwd? No.
+    
+    # Let's use patch("opengin.server.api.os.path.exists") carefully or patch the whole logic.
+    # Actually, simpler: create the file at os.getcwd()/../data/quickstart_sample.pdf if we can write there? 
+    # That pollutes the workspace.
+    
+    # Better: Patch `os.getcwd` to return tmp_path, and create `../data` or `data` relative to it.
+    
+    fake_root = tmp_path / "fake_root"
+    fake_root.mkdir()
+    fake_data = fake_root.parent / "data"
+    fake_data.mkdir()
+    # The API now checks ../data/quickstart_sample.pdf
+    (fake_data / "quickstart_sample.pdf").touch()
+    
+    with patch("opengin.server.api.os.getcwd", return_value=str(fake_root)):
+        response = client.get("/api/quick-setup")
+        
+    assert response.status_code == 200
+    data = response.json()
+    assert "file_id" in data
+    assert data["filename"] == "quickstart_sample.pdf"
+    assert "metadata" in data
+    assert "prompt" in data
+    
+    # Verify file copied to upload dir
+    saved_path = mock_upload_dir / f"{data['file_id']}.pdf"
+    assert saved_path.exists()
+
+def test_quick_setup_not_found(mock_upload_dir):
+    # Mock os.path.exists to return False for the sample file paths
+    # We wrap the original exists to return False only for pdfs perhaps?
+    # Or just ensure the paths don't exist in the test env (which they might if real data is present).
+    # Safer to patch os.getcwd to an empty temp dir.
+    
+    with patch("opengin.server.api.os.getcwd", return_value="/non/existent/path"):
+        response = client.get("/api/quick-setup")
+        
+    assert response.status_code == 404

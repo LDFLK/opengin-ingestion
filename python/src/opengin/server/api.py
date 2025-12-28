@@ -18,7 +18,7 @@ os.makedirs(base_pipeline_path, exist_ok=True)
 agent0 = Agent0(base_path=base_pipeline_path)
 
 # Temporary storage for upload before pipeline creation
-UPLOAD_DIR = "/tmp/opengin_uploads"
+UPLOAD_DIR = os.path.abspath(os.path.join(os.getcwd(), "sandbox", "uploads"))
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -41,6 +41,60 @@ async def upload_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
 
     return {"file_id": file_id, "filename": file.filename}
+
+
+@router.get("/quick-setup")
+async def quick_setup():
+    """Setup a quick start environment with sample PDF and config."""
+    # 1. Locate Sample File
+    # Assuming running from 'python' dir, data is in '../data'
+    # API is in src/opengin/server/api.py.
+    # Current working dir is likely 'python' (where make run is executed).
+    # So data is in '../data'.
+    
+    # Try to find the file
+    possible_paths = [
+        os.path.join(os.getcwd(), "..", "data", "quickstart_sample.pdf"),
+        # os.path.join(os.getcwd(), "data", "simple.pdf"), # Fallback removed as per user request
+    ]
+    
+    source_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            source_path = p
+            break
+            
+    if not source_path:
+        # Fallback to creating a dummy PDF if strictly needed for testing, 
+        # but better to raise error if data is missing.
+        raise HTTPException(status_code=404, detail="Sample file (quickstart_sample.pdf) not found on server")
+
+    # 2. Copy to Upload Dir
+    file_id = str(uuid.uuid4())
+    dest_path = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
+    try:
+        shutil.copy(source_path, dest_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to copy sample file: {e}")
+
+    # 3. Prepare Config
+    metadata_content = """fields:
+  - name: table_name
+    description: Name of the table
+    type: string
+  - name: row_count
+    description: Number of rows in the table
+    type: integer
+"""
+
+    prompt_content = "Extract all tables from the provided document. Preserve the structure and cell contents."
+
+    return {
+        "file_id": file_id,
+        "filename": os.path.basename(source_path),
+        "metadata": metadata_content,
+        "prompt": prompt_content
+    }
 
 
 def run_extraction_task(pipeline_name: str, run_id: str, prompt: str, metadata_schema: dict, api_key: str = None):

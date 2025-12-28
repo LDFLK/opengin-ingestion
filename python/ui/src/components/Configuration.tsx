@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Configuration.module.css";
 
 interface ConfigurationProps {
     fileId: string | null;
     filename: string | null;
     onExtract: (jobId: string) => void;
+    presetMetadata?: string;
+    presetPrompt?: string;
 }
 
-export default function Configuration({ fileId, filename, onExtract }: ConfigurationProps) {
+export default function Configuration({ fileId, filename, onExtract, presetMetadata, presetPrompt }: ConfigurationProps) {
     const [apiKey, setApiKey] = useState("");
     const [metadata, setMetadata] = useState("");
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Effect to update state when presets change (Quick Start)
+    useEffect(() => {
+        if (presetMetadata) setMetadata(presetMetadata);
+    }, [presetMetadata]);
+
+    useEffect(() => {
+        if (presetPrompt) setPrompt(presetPrompt);
+    }, [presetPrompt]);
 
     const handleExtract = async () => {
         if (!fileId) return;
