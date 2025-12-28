@@ -112,6 +112,34 @@ Rows:     12 found
 ----------------------------------------
 ```
 
+## Extraction with Metadata
+
+You can also extract metadata associated with each table by providing a metadata schema.
+
+### 1. Define the Schema
+
+Create a YAML file (e.g., `metadata.yml`) defining the fields you want to extract:
+
+```yaml
+fields:
+  - name: category
+    description: The category of the data in the table
+    type: string
+  - name: confidence
+    description: Confidence score (0-1) of the extraction
+    type: float
+```
+
+### 2. Run with Schema
+
+Pass the `--metadata-schema` argument to the script:
+
+```bash
+python python/examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf> --metadata-schema python/examples/extragzt/metadata.yml
+```
+
+The extracted metadata will be printed to the console and saved as a JSON file (e.g., `tablename_metadata.json`) alongside the CSV output.
+
 ## Generated Files
 
 For every run, the tracer creates a dedicated directory structure in `pipelines/`:

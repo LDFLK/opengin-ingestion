@@ -85,6 +85,16 @@ class Agent3:
 
             logger.info(f"Agent 3: Exported {filename}")
 
+            # Export metadata if present
+            metadata_content = table.get("metadata")
+            if metadata_content:
+                metadata_filename = filename.replace(".csv", "_metadata.json")
+                metadata_filepath = os.path.join(output_dir, metadata_filename)
+
+                with open(metadata_filepath, "w") as f:
+                    json.dump(metadata_content, f, indent=4)
+                logger.info(f"Agent 3: Exported {metadata_filename}")
+
         # Update metadata to status COMPLETED
         metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
         metadata["status"] = "COMPLETED"

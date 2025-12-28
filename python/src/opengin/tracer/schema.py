@@ -6,6 +6,7 @@ import typing
 
 import strawberry
 from strawberry.file_uploads import Upload
+from strawberry.scalars import JSON
 
 
 @strawberry.type
@@ -18,12 +19,14 @@ class Table:
         name (str): The name or title of the table.
         columns (List[str]): Header names for the table columns.
         rows (List[List[str]]): The data rows, where each row is a list of cell values.
+        metadata (JSON, optional): Extracted metadata associated with the table.
     """
 
     id: str
     name: str
     columns: typing.List[str]
     rows: typing.List[typing.List[str]]
+    metadata: typing.Optional[JSON] = None
 
 
 @strawberry.type
@@ -85,6 +88,7 @@ def parse_extraction_response(raw_text: str) -> ExtractionResult:
                     name=t.get("name", "Untitled"),
                     columns=t.get("columns", []),
                     rows=t.get("rows", []),
+                    metadata=t.get("metadata", None),
                 )
             )
 
@@ -169,6 +173,7 @@ class Mutation:
                             name=t.get("name", "Untitled"),
                             columns=t.get("columns", []),
                             rows=t.get("rows", []),
+                            metadata=t.get("metadata", None),
                         )
                     )
 

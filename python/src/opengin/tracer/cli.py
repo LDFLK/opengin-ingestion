@@ -1,6 +1,7 @@
 import ipaddress
 import json
 import os
+import re
 import socket
 import tempfile
 from datetime import datetime
@@ -8,6 +9,7 @@ from urllib.parse import urlparse
 
 import click
 import requests
+import yaml
 from tabulate import tabulate
 
 from opengin.tracer.agents.orchestrator import Agent0, FileSystemManager
@@ -28,20 +30,20 @@ def validate_url(url):
         try:
             ip_str = socket.gethostbyname(hostname)
         except socket.gaierror:
-             raise click.ClickException(f"Could not resolve hostname: {hostname}")
+            raise click.ClickException(f"Could not resolve hostname: {hostname}")
 
         ip = ipaddress.ip_address(ip_str)
 
         if ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_multicast:
-             raise click.ClickException(f"URL resolves to a restricted IP address: {ip_str}")
-        
+            raise click.ClickException(f"URL resolves to a restricted IP address: {ip_str}")
+
         return True
 
     except ValueError:
         raise click.ClickException("Invalid URL or IP address format")
     except Exception as e:
-         # unexpected error during validation
-         raise click.ClickException(f"URL validation failed: {e}")
+        # unexpected error during validation
+        raise click.ClickException(f"URL validation failed: {e}")
 
 
 @click.group()
@@ -193,7 +195,8 @@ def clear_all():
 @click.argument("input_source")
 @click.option("--name", default=None, help="Name of the pipeline run. Defaults to 'run_<timestamp>'.")
 @click.option("--prompt", default="Extract all tables.", help="Extraction prompt or path to a text file.")
-def run(input_source, name, prompt):
+@click.option("--metadata-schema", default=None, help="Path to a YAML file defining the metadata schema.")
+def run(input_source, name, prompt, metadata_schema):
     """
     Run an extraction pipeline.
 
@@ -209,6 +212,23 @@ def run(input_source, name, prompt):
             prompt_text = f.read()
     else:
         prompt_text = prompt
+
+    # 1.5 Handle Metadata Schema
+    schema_content = None
+    if metadata_schema:
+        if not os.path.exists(metadata_schema):
+            raise click.ClickException(f"Metadata schema file not found: {metadata_schema}")
+
+        try:
+            with open(metadata_schema, "r") as f:
+                schema_content = yaml.safe_load(f)
+
+            # Simple Validation
+            if not isinstance(schema_content, dict) or "fields" not in schema_content:
+                raise click.ClickException("Invalid schema format. Must typically contain a 'fields' list.")
+
+        except Exception as e:
+            raise click.ClickException(f"Error parsing metadata schema: {e}")
 
     # 2. Handle Input Source (Local vs URL)
     is_url = input_source.startswith("http://") or input_source.startswith("https://")
@@ -228,7 +248,6 @@ def run(input_source, name, prompt):
             content_disposition = response.headers.get("content-disposition")
             if content_disposition:
                 # Simple parsing for filename="name"
-                import re
                 fname = re.findall(r'filename="?([^"]+)"?', content_disposition)
                 if fname:
                     filename = fname[0]
@@ -236,10 +255,10 @@ def run(input_source, name, prompt):
                 # Fallback to URL path cleaning
                 path = urlparse(input_source).path
                 filename = os.path.basename(path)
-            
+
             # Ensure filename isn't empty after fallback
             if not filename or filename == ".":
-                 filename = "downloaded_doc.pdf"
+                filename = "downloaded_doc.pdf"
 
             # Create temp file
             parsed_url = urlparse(input_source)
@@ -270,14 +289,14 @@ def run(input_source, name, prompt):
     # 4. Initialize and Run Agent0
     try:
         agent0 = Agent0()
-        
+
         click.echo(f"Initializing pipeline '{name}' for file '{filename}'...")
         run_id, metadata = agent0.create_pipeline(name, input_path, filename)
 
         click.echo(f"Run ID: {run_id}")
         click.echo("Starting extraction...")
 
-        agent0.run_pipeline(name, run_id, prompt_text)
+        agent0.run_pipeline(name, run_id, prompt_text, metadata_schema=schema_content)
 
         # 5. Success Output
         click.echo("\nPipeline completed successfully!")

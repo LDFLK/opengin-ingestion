@@ -1,0 +1,43 @@
+fields:
+  - name: storage_type
+    description: Type of storage mechanism (e.g., tabular, graph)
+    type: string
+  - name: dataset_name
+    description: The name of the dataset
+    type: string
+  - name: column_count
+    description: Total number of columns in the table
+    type: integer
+  - name: row_count
+    description: Total number of rows in the table
+    type: integer
+  - name: node_count
+    description: Number of nodes (if applicable for graph data)
+    type: integer
+  - name: edges_count
+    description: Number of edges (if applicable for graph data)
+    type: integer
+  - name: resource
+    description: URL or path to the source document
+    type: string
+  - name: resource_page
+    description: Page number where the data was extracted from
+    type: string
+  - name: resource_section
+    description: Section title or header in the source document
+    type: string
+  - name: resource_identifier
+    description: Unique identifier for the resource (e.g., Table 1)
+    type: string
+  - name: extracted_date
+    description: Date when the extraction was performed (YYYY-MM-DD)
+    type: string
+  - name: extracted_by
+    description: Name of the entity or system that performed the extraction
+    type: string
+  - name: verified_by
+    description: Name of the entity or person who verified the data, if any
+    type: string
+  - name: remarks
+    description: Additional comments, summary, or description of the dataset
+    type: string
