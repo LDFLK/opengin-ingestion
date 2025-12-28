@@ -42,12 +42,33 @@ We have a 5-page PDF file (`data/quickstart_sample.pdf`) where each page contain
 
 *(If you don't have the sample PDF, you can generate it running `python scripts/generate_sample_pdf.py`)*
 
-### 2. Create the Extraction Script
+### 2. Create Metadata Schema (Optional)
+
+Create a file named `metadata.yml` to define what extra information you want to extract about the data:
+
+```yaml
+fields:
+  - name: table_category
+    description: The category of the table (e.g., Financial, Inventory, Staff)
+    type: string
+  - name: confidence_score
+    description: A score from 0 to 1 indicating confidence in extraction
+    type: float
+  - name: row_count
+    description: Number of rows in the table
+    type: integer
+  - name: column_count
+    description: Number of columns in the table
+    type: integer
+
+
+### 3. Create the Extraction Script
 
 Create a file named `quickstart_extract.py` with the following content:
 
 ```python
 import os
+import yaml
 from opengin.tracer.agents.orchestrator import Agent0
 
 # Define what we want to extract
@@ -56,21 +77,30 @@ EXTRACTION_PROMPT = """
     
     **Instructions:**
     1. **Identify**: Locate the table and its title/heading.
-    2. **Naming**: Use the table title as the table name. Convert it to snake_case (lowercase with underscores, e.g., "my_table_name").
+    2. **Naming**: Use the table title as the table name. Convert it to snake_case.
     3. **Extract**: Extract all rows and columns accurately.
-    4. **Separate**: If multiple tables exist, extract them as separate entities, each with its own name.
+    4. **Metadata**: Extract the metadata as defined in the schema, one metadata per table.
+    5. **Separate**: If multiple tables exist, extract them as separate entities, each with its own name.
 """
 
 def main():
     # 1. Setup paths
     input_pdf = "data/quickstart_sample.pdf"
     pipeline_name = "quickstart_run"
+    metadata_file = "metadata.yml"
     
     if not os.path.exists(input_pdf):
         print(f"Error: {input_pdf} not found. Please run scripts/generate_sample_pdf.py first.")
         return
 
-    # 2. Initialize the Orchestrator
+    # 2. Load Metadata Schema
+    metadata_schema = None
+    if os.path.exists(metadata_file):
+        with open(metadata_file, "r") as f:
+            metadata_schema = yaml.safe_load(f)
+        print("Loaded metadata schema.")
+
+    # 3. Initialize the Orchestrator
     agent0 = Agent0()
     
     print(f"Initializing pipeline for: {input_pdf}")
@@ -80,18 +110,18 @@ def main():
         os.path.basename(input_pdf)
     )
 
-    # 3. Run the Pipeline
+    # 4. Run the Pipeline
     print(f"Running extraction (Run ID: {run_id})...")
-    agent0.run_pipeline(pipeline_name, run_id, EXTRACTION_PROMPT)
+    agent0.run_pipeline(pipeline_name, run_id, EXTRACTION_PROMPT, metadata_schema=metadata_schema)
     
-    # 4. Success Message
+    # 5. Success Message
     print(f"Extraction complete! Check results in: pipelines/{pipeline_name}/{run_id}/output/")
 
 if __name__ == "__main__":
     main()
 ```
 
-### 3. Run the Script
+### 4. Run the Script
 
 Execute the script in your terminal:
 
@@ -134,9 +164,10 @@ OpenGIN comes with a CLI to manage and inspect your pipeline runs.
 
     Output Files:
      - sample_data_table.csv
+     - sample_data_table_metadata.json
     ```
 
-3.  **View Data**: Navigate to the output directory shown in the info command to see your CSVs.
+3.  **View Data**: Navigate to the output directory shown in the info command to see your CSVs and JSONs.
     ```bash
     ls pipelines/quickstart_run/<YOUR_RUN_ID>/output/
     ```
