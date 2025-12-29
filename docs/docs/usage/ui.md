@@ -103,8 +103,7 @@ To quickly test the application with a sample PDF and configuration, click the *
 2.  Pre-fill the metadata schema and extraction prompt.
 3.  Set up the extraction job.
 
-<!-- ![Quick Start Loaded](/img/ui_quickstart_loaded.png) -->
-<!-- TODO: Add ui_quickstart_loaded.png to docs/static/img -->
+
 
 ### Running Extraction
 

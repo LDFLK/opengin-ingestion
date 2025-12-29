@@ -39,16 +39,18 @@ format-check:
 
 .PHONY: docs-install docs-build docs-start docs-serve
 
+DOCS_DIR := ../docs
+
 docs-install:
-	cd ../docs && npm install
+	cd $(DOCS_DIR) && npm install
 
 docs-build:
-	cd ../docs && npm run build
+	cd $(DOCS_DIR) && npm run build
 
 # Runs in development mode
 docs-start:
-	cd ../docs && npm run start
+	cd $(DOCS_DIR) && npm run start
 
 # Serves the built version
 docs-serve:
-	cd ../docs && npm run serve
+	cd $(DOCS_DIR) && npm run serve
