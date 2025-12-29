@@ -220,16 +220,34 @@ async def get_results(job_id: str):
     return response_data
 
 
+def is_safe_path(base_path: str, target_path: str) -> bool:
+    """
+    Checks if the target_path is securely inside the base_path.
+    Both paths are resolved to their real paths to handle symlinks.
+    """
+    # Resolve real paths to handle symlinks and relative paths
+    real_base = os.path.realpath(base_path)
+    real_target = os.path.realpath(target_path)
+
+    # Use commonpath to check if real_base is a prefix of real_target
+    try:
+        return os.path.commonpath([real_base, real_target]) == real_base
+    except ValueError:
+        # Can happen if paths are on different drives
+        return False
+
+
 @router.get("/file")
 async def get_file_content(path: str):
     """Serve file content."""
     # Define trusted roots (allow access strictly to sandboxed areas)
-    trusted_roots = [os.path.abspath(UPLOAD_DIR), base_pipeline_path]
+    # Ensure roots themselves are resolved
+    trusted_roots = [os.path.realpath(UPLOAD_DIR), os.path.realpath(base_pipeline_path)]
 
     try:
-        # Resolve the absolute path to handle symlinks and ../ components
-        formatted_path = os.path.abspath(path)
-        real_path = os.path.realpath(formatted_path)
+        # Resolve the absolute path of the requested file
+        # We don't just trust abspath, we want realpath for the check
+        real_path = os.path.realpath(os.path.abspath(path))
     except Exception as e:
         logger.error(f"Invalid path format for {path}: {e}")
         raise HTTPException(status_code=400, detail="Invalid path format")
@@ -237,16 +255,12 @@ async def get_file_content(path: str):
     # Verify that the file is actually inside one of the trusted roots
     is_allowed = False
     for root in trusted_roots:
-        # Check if trusted root is a prefix of the real path
-        # os.path.commonpath throws if paths are on different drives on Windows, but fine here
-        try:
-            if os.path.commonpath([root, real_path]) == root:
-                is_allowed = True
-                break
-        except ValueError:
-            continue
+        if is_safe_path(root, real_path):
+            is_allowed = True
+            break
 
     if not is_allowed:
+        logger.warning(f"Security violation access attempt: {path} resolved to {real_path}")
         raise HTTPException(status_code=403, detail="Access denied: Security violation")
 
     if not os.path.exists(real_path):
