@@ -45,7 +45,7 @@ export default function Home() {
       <div className={styles.grid}>
         <div>
           <Upload onUploadComplete={handleUploadComplete} />
-          <button onClick={handleQuickStart} className={styles.quickStartBtn} style={{ marginTop: '1rem', width: '100%', padding: '0.75rem', backgroundColor: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: '0.375rem', cursor: 'pointer', fontWeight: 600 }}>
+          <button onClick={handleQuickStart} className={styles.quickStartButton}>
             🚀 Quick Start (Sample PDF & Config)
           </button>
         </div>
