@@ -15,6 +15,11 @@ run-integration-tests:
 	# Running integration tests. Use UPDATE_GOLDEN_DATA=1 to update snapshots.
 	pytest integration_tests/
 
+.PHONY: run-server-ui
+run-server-ui:
+	# Running the backend server for the UI
+	uvicorn opengin.server.main:app --host 0.0.0.0 --port 8001 --reload
+
 .PHONY: clean
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

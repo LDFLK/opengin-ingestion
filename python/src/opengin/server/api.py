@@ -108,7 +108,7 @@ def run_extraction_task(pipeline_name: str, run_id: str, prompt: str, metadata_s
     try:
         agent0.run_pipeline(pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
     except Exception as e:
-        logger.error(f"Extraction failed for run_id {run_id} in pipeline {pipeline_name}: {e}")
+        logger.error(f"Extraction failed for run_id {run_id} in pipeline {pipeline_name}: {e}", exc_info=True)
 
 
 @router.post("/extract")
@@ -148,7 +148,7 @@ async def extract_document(
             input_file_path=pdf_path,
             filename=f"doc_{file_id}.pdf",  # or original filename if we preserved it
         )
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.error(f"Failed to create pipeline '{pipeline_name}' for file {pdf_path}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create pipeline: {e}")
 
@@ -185,7 +185,7 @@ async def get_results(job_id: str):
     # Check current status from metadata.json
     try:
         metadata = agent0.fs_manager.load_metadata(pipeline_name, job_id)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.error(f"Error loading metadata for job {job_id}: {e}")
         raise HTTPException(status_code=404, detail="Job not found")
 
@@ -248,7 +248,7 @@ async def get_file_content(path: str):
         # Resolve the absolute path of the requested file
         # We don't just trust abspath, we want realpath for the check
         real_path = os.path.realpath(os.path.abspath(path))
-    except Exception as e:
+    except OSError as e:
         logger.error(f"Invalid path format for {path}: {e}")
         raise HTTPException(status_code=400, detail="Invalid path format")
 
@@ -270,7 +270,7 @@ async def get_file_content(path: str):
 
 
 @router.get("/download-all/{job_id}")
-async def download_all(job_id: str):
+async def download_all(job_id: str, background_tasks: BackgroundTasks):
     """Zip the entire pipeline run directory and return it."""
     pipeline_name = "ui_extraction"
     try:
@@ -281,24 +281,7 @@ async def download_all(job_id: str):
 
         run_path = agent0.fs_manager.get_pipeline_path(pipeline_name, job_id)
 
-        run_path = agent0.fs_manager.get_pipeline_path(pipeline_name, job_id)
-
-        # Create a secure temporary file for the zip archive
-        # We use delete=False so we can serve it, but we should rely on BackgroundTasks to clean it up?
-        # FileResponse can handle background tasks.
-
-        # Using NamedTemporaryFile to get a secure path
-        # The suffix must be .zip for make_archive to append nothing or we handle naming carefully
-        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_file:
-            tmp_file.name.replace(".zip", "")
-            # make_archive appends .zip automatically if format is zip
-            # so we pass the path without extension if we want it to verify
-            # But make_archive creates a NEW file.
-
-            # A better way is:
-            # create a temp dir, make archive inside it.
-
-        # Let's use mkdtemp to create a secure directory, then make_archive inside it.
+        # Create a secure temporary directory
         tmp_dir = tempfile.mkdtemp()
         zip_base_name = os.path.join(tmp_dir, f"run_{job_id}")
 
@@ -308,17 +291,17 @@ async def download_all(job_id: str):
 
         final_zip_path = zip_base_name + ".zip"
 
-        # Define a cleanup function
+        # Define a cleanup function to remove the temp directory and its contents
         def cleanup():
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
-        bg_tasks = BackgroundTasks()
-        bg_tasks.add_task(cleanup)
+        # Register cleanup task
+        background_tasks.add_task(cleanup)
 
         return FileResponse(
-            final_zip_path, filename=f"run_{job_id}.zip", media_type="application/zip", background=bg_tasks
+            final_zip_path, filename=f"run_{job_id}.zip", media_type="application/zip"
         )
 
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.error(f"Failed to create zip archive for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create zip: {e}")
