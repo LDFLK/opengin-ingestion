@@ -1,3 +1,8 @@
+---
+sidebar_position: 2
+sidebar_label: UI
+---
+
 # OpenGIN Ingestion UI
 
 This document describes how to install, build, and serve the OpenGIN Ingestion UI.
@@ -82,3 +87,49 @@ These directories can grow over time. You can safely remove them to free up disk
 rm -rf sandbox/uploads
 rm -rf sandbox/pipelines
 ```
+
+## Usage
+
+### Landing Page
+
+When you first open the application at `http://localhost:3001`, you will see the main dashboard:
+
+![Landing Page](/img/ui_landing_page.png)
+
+### Quick Start
+
+To quickly test the application with a sample PDF and configuration, click the **"🚀 Quick Start (Sample PDF & Config)"** button. This will automatically:
+1.  Upload a sample PDF (`quickstart_sample.pdf`).
+2.  Pre-fill the metadata schema and extraction prompt.
+3.  Set up the extraction job.
+
+<!-- ![Quick Start Loaded](/img/ui_quickstart_loaded.png) -->
+<!-- TODO: Add ui_quickstart_loaded.png to docs/static/img -->
+
+### Running Extraction
+
+1.  Enter your **Google API Key** (if not set in environment variables) in the configuration panel.
+    
+    ![Enter API Key](/img/enter_google_api_key.png)
+
+2.  Click **"Run Extraction"**.
+3.  The results will appear in the "Results" section once the job is complete.
+
+### Viewing Results
+
+Once the extraction is complete, you can explore the results in three views:
+
+#### 1. CSV Data
+View and download the extracted tables as CSV files.
+
+![CSV Results](/img/extraction_csv_data.png)
+
+#### 2. Metadata
+Inspect the extracted metadata for each table (JSON format).
+
+![Metadata Results](/img/extraction_metadata.png)
+
+#### 3. System Artifacts
+Browse the complete file structure of the extraction pipeline, including intermediate files and raw inputs.
+
+![System Results](/img/extraction_system_metadata.png)

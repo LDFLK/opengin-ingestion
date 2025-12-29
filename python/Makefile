@@ -36,3 +36,19 @@ format-check:
 	isort --check .
 	black --check .
 	flake8 .
+
+.PHONY: docs-install docs-build docs-start docs-serve
+
+docs-install:
+	cd ../docs && npm install
+
+docs-build:
+	cd ../docs && npm run build
+
+# Runs in development mode
+docs-start:
+	cd ../docs && npm run start
+
+# Serves the built version
+docs-serve:
+	cd ../docs && npm run serve
