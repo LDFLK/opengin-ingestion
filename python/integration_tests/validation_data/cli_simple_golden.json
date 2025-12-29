@@ -1,0 +1,22 @@
+[
+    {
+        "filename": "employee_directory.csv",
+        "row_count": 4
+    },
+    {
+        "filename": "event_schedule.csv",
+        "row_count": 4
+    },
+    {
+        "filename": "product_inventory.csv",
+        "row_count": 4
+    },
+    {
+        "filename": "project_tasks.csv",
+        "row_count": 4
+    },
+    {
+        "filename": "quarterly_financials.csv",
+        "row_count": 4
+    }
+]

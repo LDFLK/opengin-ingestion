@@ -1,0 +1,167 @@
+[
+    {
+        "name": "Employee Directory",
+        "columns": [
+            "ID",
+            "Name",
+            "Role",
+            "Department"
+        ],
+        "rows": [
+            [
+                "101",
+                "Alice Johnson",
+                "Engineer",
+                "Engineering"
+            ],
+            [
+                "102",
+                "Bob Smith",
+                "Manager",
+                "Sales"
+            ],
+            [
+                "103",
+                "Charlie Brown",
+                "Analyst",
+                "Marketing"
+            ]
+        ],
+        "metadata": {
+            "table_name": "Employee Directory",
+            "row_count": 3
+        }
+    },
+    {
+        "name": "Product Inventory",
+        "columns": [
+            "ID",
+            "Product",
+            "Price",
+            "Stock"
+        ],
+        "rows": [
+            [
+                "P001",
+                "Laptop",
+                "$1200",
+                "50"
+            ],
+            [
+                "P002",
+                "Mouse",
+                "$25",
+                "200"
+            ],
+            [
+                "P003",
+                "Keyboard",
+                "$45",
+                "150"
+            ]
+        ],
+        "metadata": {
+            "table_name": "Product Inventory",
+            "row_count": 3
+        }
+    },
+    {
+        "name": "Event Schedule",
+        "columns": [
+            "Date",
+            "Event",
+            "Location",
+            "Attendees"
+        ],
+        "rows": [
+            [
+                "2024-01-15",
+                "Kickoff",
+                "Room A",
+                "20"
+            ],
+            [
+                "2024-02-10",
+                "Review",
+                "Room B",
+                "15"
+            ],
+            [
+                "2024-03-05",
+                "Launch",
+                "Main Hall",
+                "100"
+            ]
+        ],
+        "metadata": {
+            "table_name": "Event Schedule",
+            "row_count": 3
+        }
+    },
+    {
+        "name": "Quarterly Financials",
+        "columns": [
+            "Quarter",
+            "Revenue",
+            "Expenses",
+            "Profit"
+        ],
+        "rows": [
+            [
+                "Q1",
+                "100k",
+                "40k",
+                "60k"
+            ],
+            [
+                "Q2",
+                "120k",
+                "50k",
+                "70k"
+            ],
+            [
+                "Q3",
+                "110k",
+                "45k",
+                "65k"
+            ]
+        ],
+        "metadata": {
+            "table_name": "Quarterly Financials",
+            "row_count": 3
+        }
+    },
+    {
+        "name": "Project Tasks",
+        "columns": [
+            "Task ID",
+            "Description",
+            "Status",
+            "Owner"
+        ],
+        "rows": [
+            [
+                "T-1",
+                "Setup DB",
+                "Done",
+                "Alice"
+            ],
+            [
+                "T-2",
+                "Create API",
+                "In Progress",
+                "Bob"
+            ],
+            [
+                "T-3",
+                "Frontend",
+                "Pending",
+                "Charlie"
+            ]
+        ],
+        "metadata": {
+            "table_name": "Project Tasks",
+            "row_count": 3
+        }
+    }
+]

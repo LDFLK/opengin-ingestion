@@ -15,7 +15,7 @@ pip install -e .
 Run the example script by providing the path to a PDF file you want to process.
 
 ```bash
-python examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf>
+python examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf> <path_to_prompt>
 ```
 
 ### Example
@@ -23,7 +23,7 @@ python examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf>
 To run the extraction on the provided sample data:
 
 ```bash
-python examples/extragzt/tabular_extragzt_extract_sample.py data/simple.pdf
+python examples/extragzt/tabular_extragzt_extract_sample.py data/simple.pdf examples/extragzt/prompt.txt
 ```
 
 ## Output

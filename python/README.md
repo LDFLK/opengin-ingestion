@@ -98,7 +98,7 @@ Check the `examples/` directory for ready-to-run scripts.
 **Tabular Data Extraction:**
 [examples/extragzt/README.md](examples/extragzt/README.md)
 
-python examples/extragzt/tabular_extragzt_extract_sample.py path/to/document.pdf
+python examples/extragzt/tabular_extragzt_extract_sample.py path/to/document.pdf examples/extragzt/prompt.txt
 ```
 
 **Metadata Extraction:**
@@ -131,7 +131,7 @@ fields:
 
 **Run Command:**
 ```bash
-python examples/extragzt/tabular_extragzt_extract_sample.py doc.pdf --metadata-schema examples/extragzt/metadata.yml
+python examples/extragzt/tabular_extragzt_extract_sample.py doc.pdf examples/extragzt/prompt.txt --metadata-schema examples/extragzt/metadata.yml
 ```
 
 ## Running the API Server

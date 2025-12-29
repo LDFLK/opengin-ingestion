@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 import uuid
 
 import yaml
@@ -51,21 +52,21 @@ async def quick_setup():
     # API is in src/opengin/server/api.py.
     # Current working dir is likely 'python' (where make run is executed).
     # So data is in '../data'.
-    
+
     # Try to find the file
     possible_paths = [
         os.path.join(os.getcwd(), "..", "data", "quickstart_sample.pdf"),
         # os.path.join(os.getcwd(), "data", "simple.pdf"), # Fallback removed as per user request
     ]
-    
+
     source_path = None
     for p in possible_paths:
         if os.path.exists(p):
             source_path = p
             break
-            
+
     if not source_path:
-        # Fallback to creating a dummy PDF if strictly needed for testing, 
+        # Fallback to creating a dummy PDF if strictly needed for testing,
         # but better to raise error if data is missing.
         raise HTTPException(status_code=404, detail="Sample file (quickstart_sample.pdf) not found on server")
 
@@ -93,7 +94,7 @@ async def quick_setup():
         "file_id": file_id,
         "filename": os.path.basename(source_path),
         "metadata": metadata_content,
-        "prompt": prompt_content
+        "prompt": prompt_content,
     }
 
 
@@ -215,17 +216,14 @@ async def get_results(job_id: str):
 async def get_file_content(path: str):
     """Serve file content."""
     # Define trusted roots (allow access strictly to sandboxed areas)
-    trusted_roots = [
-        os.path.abspath(UPLOAD_DIR),
-        base_pipeline_path
-    ]
+    trusted_roots = [os.path.abspath(UPLOAD_DIR), base_pipeline_path]
 
     try:
         # Resolve the absolute path to handle symlinks and ../ components
         formatted_path = os.path.abspath(path)
         real_path = os.path.realpath(formatted_path)
     except Exception:
-         raise HTTPException(status_code=400, detail="Invalid path format")
+        raise HTTPException(status_code=400, detail="Invalid path format")
 
     # Verify that the file is actually inside one of the trusted roots
     is_allowed = False
@@ -233,22 +231,22 @@ async def get_file_content(path: str):
         # Check if trusted root is a prefix of the real path
         # os.path.commonpath throws if paths are on different drives on Windows, but fine here
         try:
-             if os.path.commonpath([root, real_path]) == root:
-                 is_allowed = True
-                 break
+            if os.path.commonpath([root, real_path]) == root:
+                is_allowed = True
+                break
         except ValueError:
-             continue
-    
+            continue
+
     if not is_allowed:
         raise HTTPException(status_code=403, detail="Access denied: Security violation")
-    
+
     if not os.path.exists(real_path):
         raise HTTPException(status_code=404, detail="File not found")
 
     # Determine media type suitable for browser viewing or text
     if path.endswith(".csv") or path.endswith(".txt") or path.endswith(".json") or path.endswith(".yml"):
         return FileResponse(real_path, filename=os.path.basename(real_path))
-    
+
     return FileResponse(real_path, filename=os.path.basename(real_path))
 
 
@@ -264,14 +262,43 @@ async def download_all(job_id: str):
 
         run_path = agent0.fs_manager.get_pipeline_path(pipeline_name, job_id)
 
-        # Create a zip file in temp
-        zip_filename = f"run_{job_id}"
-        zip_path = os.path.join("/tmp", zip_filename)
+        run_path = agent0.fs_manager.get_pipeline_path(pipeline_name, job_id)
 
-        shutil.make_archive(zip_path, "zip", run_path)
+        # Create a secure temporary file for the zip archive
+        # We use delete=False so we can serve it, but we should rely on BackgroundTasks to clean it up?
+        # FileResponse can handle background tasks.
 
-        final_zip_path = zip_path + ".zip"
-        return FileResponse(final_zip_path, filename=f"{zip_filename}.zip", media_type="application/zip")
+        # Using NamedTemporaryFile to get a secure path
+        # The suffix must be .zip for make_archive to append nothing or we handle naming carefully
+        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_file:
+            tmp_file.name.replace(".zip", "")
+            # make_archive appends .zip automatically if format is zip
+            # so we pass the path without extension if we want it to verify
+            # But make_archive creates a NEW file.
+
+            # A better way is:
+            # create a temp dir, make archive inside it.
+
+        # Let's use mkdtemp to create a secure directory, then make_archive inside it.
+        tmp_dir = tempfile.mkdtemp()
+        zip_base_name = os.path.join(tmp_dir, f"run_{job_id}")
+
+        # shutil.make_archive(base_name, format, root_dir)
+        # resulting file will be zip_base_name + .zip
+        shutil.make_archive(zip_base_name, "zip", run_path)
+
+        final_zip_path = zip_base_name + ".zip"
+
+        # Define a cleanup function
+        def cleanup():
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
+        bg_tasks = BackgroundTasks()
+        bg_tasks.add_task(cleanup)
+
+        return FileResponse(
+            final_zip_path, filename=f"run_{job_id}.zip", media_type="application/zip", background=bg_tasks
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create zip: {e}")

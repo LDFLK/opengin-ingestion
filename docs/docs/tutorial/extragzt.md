@@ -29,7 +29,7 @@ The script starts by initializing the `Agent0` orchestrator. This agent manages 
 ```python
 from opengin.tracer.agents.orchestrator import Agent0
 
-def perform_extraction(file_path: str) -> None:
+def perform_extraction(file_path: str, prompt_file: str) -> None:
     # Initialize Agent0 Orchestrator
     agent0 = Agent0()
     pipeline_name = "example_extragzt_run"
@@ -45,17 +45,22 @@ def perform_extraction(file_path: str) -> None:
 
 ### 2. Defining the Extraction Prompt
 
-The core logic of *what* to extract is defined in the `EXTRACTION_PROMPT`. This prompt is sent to the GenAI model (Gemini).
+The core logic of *what* to extract is now separated into a text file (e.g., `prompt.txt`). This allows for easier iteration on prompts without modifying the code.
+
+```text
+**Objective:** Extract all tables from the provided document.
+
+**Instructions:**
+1. **Identify Minister:** Locate the name of the minister...
+2. **Strict Row Alignment:** Each column generally has items...
+...
+```
+
+The script reads this file during execution:
 
 ```python
-EXTRACTION_PROMPT = """
-    **Objective:** Extract all tables from the provided document.
-    
-    **Instructions:**
-    1. **Identify Minister:** Locate the name of the minister...
-    2. **Strict Row Alignment:** Each column generally has items...
-    ...
-"""
+    with open(prompt_file, "r") as f:
+        extraction_prompt = f.read()
 ```
 
 ### 3. Running the Pipeline
@@ -64,7 +69,7 @@ The actual processing is triggered by a single call to `run_pipeline`. This meth
 
 ```python
     # Run Extraction
-    agent0.run_pipeline(pipeline_name, run_id, EXTRACTION_PROMPT)
+    agent0.run_pipeline(pipeline_name, run_id, extraction_prompt)
 ```
 
 ### 4. Retrieving Results
@@ -85,7 +90,12 @@ Once the pipeline completes, the script reads the aggregated results from the fi
 To run the example, use the following command from the root of the project:
 
 ```bash
-python python/examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf>
+python python/examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf> <path_to_prompt_txt>
+```
+
+For the provided example prompt:
+```bash
+python python/examples/extragzt/tabular_extragzt_extract_sample.py python/data/simple.pdf python/examples/extragzt/prompt.txt
 ```
 
 ### Example Output
@@ -135,7 +145,7 @@ fields:
 Pass the `--metadata-schema` argument to the script:
 
 ```bash
-python python/examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf> --metadata-schema python/examples/extragzt/metadata.yml
+python python/examples/extragzt/tabular_extragzt_extract_sample.py <path_to_pdf> <path_to_prompt> --metadata-schema python/examples/extragzt/metadata.yml
 ```
 
 The extracted metadata will be printed to the console and saved as a JSON file (e.g., `tablename_metadata.json`) alongside the CSV output.
