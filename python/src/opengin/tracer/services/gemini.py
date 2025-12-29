@@ -147,11 +147,7 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
         # 1. Upload File
         myfile = upload_file_to_gemini(file_path, api_key=api_key)
 
-        # 2. Wait for processing (needs client too, update wait function or use local_client directly?)
-        # wait_for_files_active uses global client. We should update it too.
-        # For now, let's update wait_for_files_active to take client or assume the global one is what it used before.
-        # Actually, wait_for_files_active relies on 'client'. We should fix that too.
-        # But wait, we can pass the client to wait_for_files_active.
+        # 2. Wait for processing
 
         wait_for_files_active([myfile], client=local_client)
 

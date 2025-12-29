@@ -68,3 +68,17 @@ npm start
 ```
 
 This will run the optimized production server.
+
+## Cleanup
+
+The application generates temporary files and extraction artifacts in the following directories (relative to the directory where the backend server is started):
+
+*   `sandbox/uploads`: Contains uploaded PDF files.
+*   `sandbox/pipelines`: Contains extraction results, metadata, and intermediate files.
+
+These directories can grow over time. You can safely remove them to free up disk space if the extraction history is no longer needed:
+
+```bash
+rm -rf sandbox/uploads
+rm -rf sandbox/pipelines
+```

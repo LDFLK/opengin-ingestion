@@ -58,9 +58,18 @@ async def quick_setup():
     # So data is in '../data'.
 
     # Try to find the file
+    # Robust path resolution using __file__
+    # api.py is in python/src/opengin/server/api.py
+    # We need to go up to opengin-ingestion root, then into data
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(current_dir, "..", "..", "..", "..", ".."))
+    sample_file_path = os.path.join(project_root, "data", "quickstart_sample.pdf")
+
     possible_paths = [
+        sample_file_path,
+        # Fallback for dev environments where project structure might differ?
         os.path.join(os.getcwd(), "..", "data", "quickstart_sample.pdf"),
-        # os.path.join(os.getcwd(), "data", "simple.pdf"), # Fallback removed as per user request
     ]
 
     source_path = None

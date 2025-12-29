@@ -4,12 +4,9 @@ import re
 import subprocess
 
 
-def run_cli_command(args, cwd):
-    # Runs opengin cli
-    # Assumes 'opengin' is installed or accessible via python -m
+def run_cli_command(args, cwd, python_root):
     env = os.environ.copy()
-    # Add src to PYTHONPATH if running from source
-    src_path = os.path.abspath(os.path.join(cwd, "src"))
+    src_path = os.path.join(python_root, "src")
     env["PYTHONPATH"] = f"{src_path}:{env.get('PYTHONPATH', '')}"
 
     cmd = ["python", "-m", "opengin.tracer.cli"] + args
@@ -59,11 +56,8 @@ def verify_cli_run(result, run_name, cwd, validation_data_dir, golden_filename):
         # But for row counts, it should be relatively stable for a good model.
         assert len(current_data) == len(golden_data)
         for cur, gold in zip(current_data, golden_data):
-            # Check structure if not exact name match (names might vary if model names tables differently?)
-            # Prompt says "Use table title". If LLM is consistent, name is consistent.
-            # Relaxing comparison to row counts if names differ? No, let's strict check first.
-            # If flaky, we relax.
-            assert cur["filename"] == gold["filename"] or True  # Names might vary.
+
+
             # Actually, table names from LLM are non-deterministic often.
             # Let's verify we got SOME data.
             assert cur["row_count"] > 0
@@ -91,7 +85,7 @@ def test_cli_simple(sample_data_dir, validation_data_dir, tmp_path):
     repo_python_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
     # Run CLI
-    result = run_cli_command_with_path(args, cwd=str(tmp_path), python_root=repo_python_dir)
+    result = run_cli_command(args, cwd=str(tmp_path), python_root=repo_python_dir)
     verify_cli_run(result, run_name, str(tmp_path), validation_data_dir, "cli_simple_golden.json")
 
 
@@ -109,15 +103,8 @@ def test_cli_advanced(sample_data_dir, validation_data_dir, tmp_path, advanced_p
 
     args = ["run", pdf_path, "--name", run_name, "--prompt", str(p_file), "--metadata-schema", str(s_file)]
 
-    result = run_cli_command_with_path(args, cwd=str(tmp_path), python_root=repo_python_dir)
+    result = run_cli_command(args, cwd=str(tmp_path), python_root=repo_python_dir)
     verify_cli_run(result, run_name, str(tmp_path), validation_data_dir, "cli_advanced_golden.json")
 
 
-def run_cli_command_with_path(args, cwd, python_root):
-    env = os.environ.copy()
-    src_path = os.path.join(python_root, "src")
-    env["PYTHONPATH"] = f"{src_path}:{env.get('PYTHONPATH', '')}"
 
-    cmd = ["python", "-m", "opengin.tracer.cli"] + args
-    result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, env=env)
-    return result
