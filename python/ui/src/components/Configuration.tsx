@@ -39,7 +39,7 @@ export default function Configuration({ fileId, filename, onExtract, presetMetad
         formData.append("prompt", prompt);
 
         try {
-            const response = await fetch("http://localhost:8001/api/extract", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/extract`, {
                 method: "POST",
                 body: formData,
             });

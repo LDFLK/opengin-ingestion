@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import tempfile
@@ -11,6 +12,8 @@ from pydantic import BaseModel
 from opengin.tracer.agents.orchestrator import Agent0
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
 
 # Initialize Orchestrator
 # We use a fixed directory for the sandbox/pipelines
@@ -38,7 +41,8 @@ async def upload_pdf(file: UploadFile = File(...)):
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-    except Exception as e:
+    except OSError as e:
+        logger.error(f"Failed to save file {file_path}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
 
     return {"file_id": file_id, "filename": file.filename}
@@ -75,7 +79,8 @@ async def quick_setup():
     dest_path = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
     try:
         shutil.copy(source_path, dest_path)
-    except Exception as e:
+    except OSError as e:
+        logger.error(f"Failed to copy sample file from {source_path} to {dest_path}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to copy sample file: {e}")
 
     # 3. Prepare Config
@@ -103,7 +108,7 @@ def run_extraction_task(pipeline_name: str, run_id: str, prompt: str, metadata_s
     try:
         agent0.run_pipeline(pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
     except Exception as e:
-        print(f"Extraction failed for {run_id}: {e}")
+        logger.error(f"Extraction failed for run_id {run_id} in pipeline {pipeline_name}: {e}")
 
 
 @router.post("/extract")
@@ -144,6 +149,7 @@ async def extract_document(
             filename=f"doc_{file_id}.pdf",  # or original filename if we preserved it
         )
     except Exception as e:
+        logger.error(f"Failed to create pipeline '{pipeline_name}' for file {pdf_path}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create pipeline: {e}")
 
     # Run in background
@@ -167,7 +173,8 @@ def get_directory_structure(root_dir):
             else:
                 params["children"].append({"name": item, "path": item_path, "type": "file"})
     except PermissionError:
-        pass
+        logger.error(f"Permission denied accessing directory: {root_dir}")
+
     return params
 
 
@@ -178,7 +185,8 @@ async def get_results(job_id: str):
     # Check current status from metadata.json
     try:
         metadata = agent0.fs_manager.load_metadata(pipeline_name, job_id)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error loading metadata for job {job_id}: {e}")
         raise HTTPException(status_code=404, detail="Job not found")
 
     if not metadata:
@@ -222,7 +230,8 @@ async def get_file_content(path: str):
         # Resolve the absolute path to handle symlinks and ../ components
         formatted_path = os.path.abspath(path)
         real_path = os.path.realpath(formatted_path)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Invalid path format for {path}: {e}")
         raise HTTPException(status_code=400, detail="Invalid path format")
 
     # Verify that the file is actually inside one of the trusted roots
@@ -242,10 +251,6 @@ async def get_file_content(path: str):
 
     if not os.path.exists(real_path):
         raise HTTPException(status_code=404, detail="File not found")
-
-    # Determine media type suitable for browser viewing or text
-    if path.endswith(".csv") or path.endswith(".txt") or path.endswith(".json") or path.endswith(".yml"):
-        return FileResponse(real_path, filename=os.path.basename(real_path))
 
     return FileResponse(real_path, filename=os.path.basename(real_path))
 
@@ -301,4 +306,5 @@ async def download_all(job_id: str):
         )
 
     except Exception as e:
+        logger.error(f"Failed to create zip archive for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create zip: {e}")

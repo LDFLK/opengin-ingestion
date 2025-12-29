@@ -24,7 +24,7 @@ export default function Home() {
 
   const handleQuickStart = async () => {
     try {
-      const response = await fetch("http://localhost:8001/api/quick-setup");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quick-setup`);
       if (!response.ok) throw new Error("Quick setup failed");
 
       const data = await response.json();

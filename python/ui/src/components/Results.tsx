@@ -26,7 +26,7 @@ export default function Results({ jobId }: ResultsProps) {
 
         const interval = setInterval(async () => {
             try {
-                const response = await fetch(`http://localhost:8001/api/results/${jobId}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/results/${jobId}`);
                 if (response.ok) {
                     const result = await response.json();
                     setData(result);
@@ -48,7 +48,7 @@ export default function Results({ jobId }: ResultsProps) {
 
         const fetchContent = async () => {
             try {
-                const response = await fetch(`http://localhost:8001/api/file?path=${encodeURIComponent(selectedFile)}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/file?path=${encodeURIComponent(selectedFile)}`);
                 if (response.ok) {
                     const text = await response.text();
                     setFileContent(text);
@@ -66,7 +66,7 @@ export default function Results({ jobId }: ResultsProps) {
     const handleDownloadFile = (e: React.MouseEvent, path: string, name: string) => {
         e.stopPropagation();
         const link = document.createElement('a');
-        link.href = `http://localhost:8001/api/file?path=${encodeURIComponent(path)}`;
+        link.href = `${process.env.NEXT_PUBLIC_API_URL}/api/file?path=${encodeURIComponent(path)}`;
         link.download = name;
         document.body.appendChild(link);
         link.click();
@@ -75,7 +75,7 @@ export default function Results({ jobId }: ResultsProps) {
 
     const handleDownloadAll = () => {
         if (!jobId) return;
-        window.location.href = `http://localhost:8001/api/download-all/${jobId}`;
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/download-all/${jobId}`;
     };
 
     if (!jobId) return null;

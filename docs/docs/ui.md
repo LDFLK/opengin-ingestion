@@ -31,7 +31,7 @@ Ensure you have the `doctracer` environment or equivalent set up.
 # If using mamba/conda
 mamba activate doctracer
 pip install -e ".[tracer]"  # Install opengin with tracer dependencies
-pip install uvicorn fastapi python-multipart
+
 ```
 
 ## Development
