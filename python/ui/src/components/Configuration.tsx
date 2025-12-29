@@ -45,7 +45,8 @@ export default function Configuration({ fileId, filename, onExtract, presetMetad
             });
 
             if (!response.ok) {
-                throw new Error("Extraction failed");
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || "Extraction failed");
             }
 
             const data = await response.json();

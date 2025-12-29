@@ -7,6 +7,11 @@ interface ResultsProps {
     jobId: string | null;
 }
 
+interface FileItem {
+    name: string;
+    path: string;
+}
+
 interface FileNode {
     name: string;
     path: string;
@@ -14,8 +19,19 @@ interface FileNode {
     children?: FileNode[];
 }
 
+interface ResultsData {
+    status: string;
+    error: string | null;
+    metadata: any;
+    files: {
+        csv: FileItem[];
+        metadata: FileItem[];
+        system: FileNode;
+    };
+}
+
 export default function Results({ jobId }: ResultsProps) {
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<ResultsData | null>(null);
     const [activeTab, setActiveTab] = useState<"csv" | "metadata" | "system">("csv");
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
     const [fileContent, setFileContent] = useState<string | null>(null);
@@ -28,7 +44,7 @@ export default function Results({ jobId }: ResultsProps) {
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/results/${jobId}`);
                 if (response.ok) {
-                    const result = await response.json();
+                    const result: ResultsData = await response.json();
                     setData(result);
                 }
             } catch (err) {
@@ -126,7 +142,7 @@ export default function Results({ jobId }: ResultsProps) {
         return (
             <div className={styles.list}>
                 {items.length === 0 && <p>No files found.</p>}
-                {items.map((f: any) => (
+                {items.map((f: FileItem) => (
                     <div
                         key={f.path}
                         className={`${styles.fileItem} ${selectedFile === f.path ? styles.activeFile : ''}`}

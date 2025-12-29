@@ -28,7 +28,8 @@ export default function Upload({ onUploadComplete }: UploadProps) {
             });
 
             if (!response.ok) {
-                throw new Error("Upload failed");
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || "Upload failed");
             }
 
             const data = await response.json();
