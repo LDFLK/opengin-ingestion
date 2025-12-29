@@ -51,8 +51,12 @@ export default function Configuration({ fileId, filename, onExtract, presetMetad
 
             const data = await response.json();
             onExtract(data.job_id);
-        } catch (err: any) {
-            setError(err.message || "Failed to start extraction");
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Failed to start extraction");
+            }
         } finally {
             setLoading(false);
         }

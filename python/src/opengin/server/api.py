@@ -156,6 +156,9 @@ async def extract_document(
     # Run in background
     background_tasks.add_task(run_extraction_task, pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
 
+    # Cleanup the uploaded file as it has been copied to the pipeline
+    background_tasks.add_task(os.remove, pdf_path)
+
     return {"job_id": run_id, "status": "pending", "pipeline_name": pipeline_name}
 
 
@@ -298,9 +301,7 @@ async def download_all(job_id: str, background_tasks: BackgroundTasks):
         # Register cleanup task
         background_tasks.add_task(cleanup)
 
-        return FileResponse(
-            final_zip_path, filename=f"run_{job_id}.zip", media_type="application/zip"
-        )
+        return FileResponse(final_zip_path, filename=f"run_{job_id}.zip", media_type="application/zip")
 
     except (OSError, ValueError) as e:
         logger.error(f"Failed to create zip archive for job {job_id}: {e}")

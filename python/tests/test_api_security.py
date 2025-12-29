@@ -45,7 +45,8 @@ def test_is_safe_path():
             # Case 4: Non-existent file inside (should still be "safe path" conceptually,
             # though get_file_content checks existence separately)
             # os.path.realpath resolves non-existent paths by appending to cwd or resolving logically?
-            # actually strict realpath might fail if components don't exist on some OS, but on unix it resolves as much as possible.
+            # actually strict realpath might fail if components don't exist on some OS,
+            # but on Unix it resolves as much as possible.
             # safe_path just checks if if fully resolved path starts with base.
             missing_safe = os.path.join(base_dir, "missing.txt")
             assert is_safe_path(base_dir, missing_safe) is True

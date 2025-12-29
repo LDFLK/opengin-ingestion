@@ -22,7 +22,7 @@ interface FileNode {
 interface ResultsData {
     status: string;
     error: string | null;
-    metadata: any;
+    metadata: Record<string, unknown>;
     files: {
         csv: FileItem[];
         metadata: FileItem[];
@@ -36,6 +36,11 @@ export default function Results({ jobId }: ResultsProps) {
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
     const [fileContent, setFileContent] = useState<string | null>(null);
 
+    const handleSelectFile = (path: string | null) => {
+        setSelectedFile(path);
+        setFileContent(null);
+    };
+
     // Poll for results
     useEffect(() => {
         if (!jobId) return;
@@ -47,8 +52,8 @@ export default function Results({ jobId }: ResultsProps) {
                     const result: ResultsData = await response.json();
                     setData(result);
                 }
-            } catch (err) {
-                console.error("Polling error", err);
+            } catch (error) {
+                console.error("Polling error", error);
             }
         }, 2000);
 
@@ -57,10 +62,7 @@ export default function Results({ jobId }: ResultsProps) {
 
     // Fetch file content
     useEffect(() => {
-        if (!selectedFile) {
-            setFileContent(null);
-            return;
-        }
+        if (!selectedFile) return;
 
         const fetchContent = async () => {
             try {
@@ -71,7 +73,7 @@ export default function Results({ jobId }: ResultsProps) {
                 } else {
                     setFileContent("Error loading file content.");
                 }
-            } catch (err) {
+            } catch {
                 setFileContent("Error loading file content.");
             }
         };
@@ -102,7 +104,7 @@ export default function Results({ jobId }: ResultsProps) {
                 <div
                     key={node.path}
                     className={`${styles.fileItem} ${selectedFile === node.path ? styles.activeFile : ''}`}
-                    onClick={() => setSelectedFile(node.path)}
+                    onClick={() => handleSelectFile(node.path)}
                 >
                     <span className={styles.fileName}>📄 {node.name}</span>
                     <button
@@ -146,7 +148,7 @@ export default function Results({ jobId }: ResultsProps) {
                     <div
                         key={f.path}
                         className={`${styles.fileItem} ${selectedFile === f.path ? styles.activeFile : ''}`}
-                        onClick={() => setSelectedFile(f.path)}
+                        onClick={() => handleSelectFile(f.path)}
                     >
                         <span className={styles.fileName}>{f.name}</span>
                         <button
