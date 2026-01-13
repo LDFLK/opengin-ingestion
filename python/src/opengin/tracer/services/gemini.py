@@ -139,7 +139,6 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
                 ["Widget B", "1", "$25.00"]
               ]
             }
-            }
           ]
         }
         """,
