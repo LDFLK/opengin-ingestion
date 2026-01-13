@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import shutil
+import time
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List
@@ -394,12 +395,27 @@ class Agent0:
             prompt (str): The extraction instruction prompt for the LLM.
             metadata_schema (dict, optional): The metadata schema to use for extraction.
         """
+
         logger.info(f"Agent 0: Running pipeline '{pipeline_name}' run '{run_id}'")
+
+        start_time = time.time()
 
         try:
             self.run_scaning_and_extraction(pipeline_name, run_id, prompt, metadata_schema, api_key=api_key)
             self.run_aggregation(pipeline_name, run_id)
             self.run_export(pipeline_name, run_id)
+
+            end_time = time.time()
+            duration = end_time - start_time
+
+            # Update completion status and time
+            metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
+            metadata["status"] = "COMPLETED"
+            metadata["execution_time_seconds"] = round(duration, 2)
+            self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
+            
+            logger.info(f"Agent 0: Pipeline '{pipeline_name}' completed in {duration:.2f}s")
+
 
         except Exception as e:
             logger.error(f"Agent 0: Pipeline failed - {e}")

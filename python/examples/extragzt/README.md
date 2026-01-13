@@ -26,6 +26,12 @@ To run the extraction on the provided sample data:
 python examples/extragzt/tabular_extragzt_extract_sample.py data/simple.pdf examples/extragzt/prompt.txt
 ```
 
+To run on the full gazette
+
+```bash
+python examples/extragzt/tabular_extragzt_extract_sample.py data/full_tb_gzt.pdf examples/extragzt/prompt.txt
+```
+
 ## Output
 
 The script will:

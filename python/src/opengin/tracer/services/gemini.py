@@ -138,9 +138,10 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
                 ["Widget B", "1", "$25.00"]
               ]
             }
+            }
           ]
         }
-        """
+        """, {}
 
     myfile = None
     try:
@@ -186,7 +187,15 @@ def extract_data_with_gemini(file_path: str, user_prompt: str, metadata_schema: 
         # client.models.generate_content(model=..., contents=[...])
         response = local_client.models.generate_content(model=MODEL_NAME, contents=[myfile, system_instruction])
 
-        return response.text
+        usage_metadata = {}
+        if response.usage_metadata:
+             usage_metadata = {
+                 "prompt_token_count": response.usage_metadata.prompt_token_count,
+                 "candidates_token_count": response.usage_metadata.candidates_token_count,
+                 "total_token_count": response.usage_metadata.total_token_count
+             }
+
+        return response.text, usage_metadata
     finally:
         # 4. Cleanup
         if myfile:
