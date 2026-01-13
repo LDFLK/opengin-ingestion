@@ -26,7 +26,7 @@ def test_agent1_scanner(fs_manager, mock_gemini_response, tmp_path):
     with (
         patch.object(Agent1, "_split_pdf", return_value=[str(tmp_path / "page_1.pdf"), str(tmp_path / "page_2.pdf")]),
         patch(
-            "opengin.tracer.agents.scanner.extract_data_with_gemini", return_value=json.dumps(mock_gemini_response)
+            "opengin.tracer.agents.scanner.extract_data_with_gemini", return_value=(json.dumps(mock_gemini_response), {})
         ) as _,
     ):
 

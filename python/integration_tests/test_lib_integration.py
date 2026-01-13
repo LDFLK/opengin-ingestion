@@ -1,5 +1,6 @@
 import json
 import os
+
 import yaml
 
 from opengin.tracer.agents.orchestrator import Agent0
@@ -29,7 +30,6 @@ def test_library_extraction_simple(sample_data_dir, validation_data_dir, metadat
     pdf_path = os.path.join(sample_data_dir, "quickstart_sample.pdf")
 
     # Parse YAML schema from string fixture
-
 
     schema = yaml.safe_load(metadata_schema)
 

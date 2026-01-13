@@ -99,7 +99,7 @@ class Agent1:
                     "tables": tables_data,
                     "raw_response": parsed_result.raw_response,
                     "message": parsed_result.message,
-                    "token_usage": usage
+                    "token_usage": usage,
                 }
 
                 self.fs_manager.save_intermediate_result(pipeline_name, run_id, page_num, page_data)
@@ -113,7 +113,7 @@ class Agent1:
         metadata["token_usage"] = {
             "total_input_tokens": total_tokens["input"],
             "total_output_tokens": total_tokens["output"],
-            "total_tokens": total_tokens["total"]
+            "total_tokens": total_tokens["total"],
         }
         self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 

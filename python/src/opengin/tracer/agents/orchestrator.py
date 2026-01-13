@@ -413,9 +413,8 @@ class Agent0:
             metadata["status"] = "COMPLETED"
             metadata["execution_time_seconds"] = round(duration, 2)
             self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
-            
-            logger.info(f"Agent 0: Pipeline '{pipeline_name}' completed in {duration:.2f}s")
 
+            logger.info(f"Agent 0: Pipeline '{pipeline_name}' completed in {duration:.2f}s")
 
         except Exception as e:
             logger.error(f"Agent 0: Pipeline failed - {e}")

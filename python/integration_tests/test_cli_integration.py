@@ -57,7 +57,6 @@ def verify_cli_run(result, run_name, cwd, validation_data_dir, golden_filename):
         assert len(current_data) == len(golden_data)
         for cur, gold in zip(current_data, golden_data):
 
-
             # Actually, table names from LLM are non-deterministic often.
             # Let's verify we got SOME data.
             assert cur["row_count"] > 0
@@ -105,6 +104,3 @@ def test_cli_advanced(sample_data_dir, validation_data_dir, tmp_path, advanced_p
 
     result = run_cli_command(args, cwd=str(tmp_path), python_root=repo_python_dir)
     verify_cli_run(result, run_name, str(tmp_path), validation_data_dir, "cli_advanced_golden.json")
-
-
-
