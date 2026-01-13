@@ -25,7 +25,7 @@ def test_integration_full_pipeline(fs_manager, tmp_path, mock_gemini_response):
     with (
         patch("opengin.tracer.agents.scanner.Agent1._split_pdf", return_value=[str(tmp_path / "page_1.pdf")]) as _,
         patch(
-            "opengin.tracer.agents.scanner.extract_data_with_gemini", return_value=json.dumps(mock_gemini_response)
+            "opengin.tracer.agents.scanner.extract_data_with_gemini", return_value=(json.dumps(mock_gemini_response), {})
         ) as _,
     ):
 

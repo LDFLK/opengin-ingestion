@@ -66,6 +66,20 @@ def perform_extraction(file_path: str, prompt_file: str, metadata_schema_path: s
         logger.info(f"Running extraction with Run ID: {run_id}")
         agent0.run_pipeline(pipeline_name, run_id, extraction_prompt, metadata_schema=metadata_schema)
 
+        # Retrieve Metadata for Metrics
+        pipeline_meta = agent0.fs_manager.load_metadata(pipeline_name, run_id)
+
+        print("\n" + "=" * 40)
+        print("          PIPELINE METRICS")
+        print("=" * 40)
+        print(f"Execution Time: {pipeline_meta.get('execution_time_seconds', 'N/A')} seconds")
+
+        tokens = pipeline_meta.get("token_usage", {})
+        print(f"Input Tokens:   {tokens.get('total_input_tokens', 0)}")
+        print(f"Output Tokens:  {tokens.get('total_output_tokens', 0)}")
+        print(f"Total Tokens:   {tokens.get('total_tokens', 0)}")
+        print("=" * 40 + "\n")
+
         # Retrieve Results
         fs_manager = agent0.fs_manager
         aggregated_path = fs_manager.get_aggregated_results_path(pipeline_name, run_id)

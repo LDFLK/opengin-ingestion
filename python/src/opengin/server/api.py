@@ -61,7 +61,7 @@ async def quick_setup():
     # Robust path resolution using __file__
     # api.py is in python/src/opengin/server/api.py
     # We need to go up to opengin-ingestion root, then into data
-    
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_dir, "..", "..", "..", "..", ".."))
     sample_file_path = os.path.join(project_root, "data", "quickstart_sample.pdf")

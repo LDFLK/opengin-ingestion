@@ -62,6 +62,9 @@ class Agent1:
         metadata["page_count"] = len(page_files)
         self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
+        # Token accumulation
+        total_tokens = {"total_input_tokens": 0, "total_output_tokens": 0, "total_tokens": 0}
+
         # Extract Data for each page
         for i, page_path in enumerate(page_files):
             page_num = i + 1
@@ -69,7 +72,12 @@ class Agent1:
 
             try:
                 # Call Gemini
-                raw_response = extract_data_with_gemini(page_path, prompt, metadata_schema, api_key=api_key)
+                raw_response, usage = extract_data_with_gemini(page_path, prompt, metadata_schema, api_key=api_key)
+
+                # Accumulate tokens
+                total_tokens["total_input_tokens"] += usage.get("prompt_token_count", 0)
+                total_tokens["total_output_tokens"] += usage.get("candidates_token_count", 0)
+                total_tokens["total_tokens"] += usage.get("total_token_count", 0)
 
                 # Parse to ensure valid structure
                 parsed_result = parse_extraction_response(raw_response)
@@ -91,6 +99,7 @@ class Agent1:
                     "tables": tables_data,
                     "raw_response": parsed_result.raw_response,
                     "message": parsed_result.message,
+                    "token_usage": usage,
                 }
 
                 self.fs_manager.save_intermediate_result(pipeline_name, run_id, page_num, page_data)
@@ -98,6 +107,11 @@ class Agent1:
             except Exception as e:
                 logger.error(f"Agent 1: Failed on page {page_num} - {e}")
                 self.fs_manager.save_intermediate_result(pipeline_name, run_id, page_num, {"error": str(e)})
+
+        # Update metadata with total token usage
+        metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
+        metadata["token_usage"] = total_tokens
+        self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
         logger.info(f"Agent 1: Completed scanning for '{pipeline_name}'")
 
