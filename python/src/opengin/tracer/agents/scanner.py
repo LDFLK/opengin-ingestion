@@ -63,7 +63,7 @@ class Agent1:
         self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
         # Token accumulation
-        total_tokens = {"input": 0, "output": 0, "total": 0}
+        total_tokens = {"total_input_tokens": 0, "total_output_tokens": 0, "total_tokens": 0}
 
         # Extract Data for each page
         for i, page_path in enumerate(page_files):
@@ -75,9 +75,9 @@ class Agent1:
                 raw_response, usage = extract_data_with_gemini(page_path, prompt, metadata_schema, api_key=api_key)
 
                 # Accumulate tokens
-                total_tokens["input"] += usage.get("prompt_token_count", 0)
-                total_tokens["output"] += usage.get("candidates_token_count", 0)
-                total_tokens["total"] += usage.get("total_token_count", 0)
+                total_tokens["total_input_tokens"] += usage.get("prompt_token_count", 0)
+                total_tokens["total_output_tokens"] += usage.get("candidates_token_count", 0)
+                total_tokens["total_tokens"] += usage.get("total_token_count", 0)
 
                 # Parse to ensure valid structure
                 parsed_result = parse_extraction_response(raw_response)
@@ -110,11 +110,7 @@ class Agent1:
 
         # Update metadata with total token usage
         metadata = self.fs_manager.load_metadata(pipeline_name, run_id)
-        metadata["token_usage"] = {
-            "total_input_tokens": total_tokens["input"],
-            "total_output_tokens": total_tokens["output"],
-            "total_tokens": total_tokens["total"],
-        }
+        metadata["token_usage"] = total_tokens
         self.fs_manager.save_metadata(pipeline_name, run_id, metadata)
 
         logger.info(f"Agent 1: Completed scanning for '{pipeline_name}'")
